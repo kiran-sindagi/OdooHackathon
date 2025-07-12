@@ -153,12 +153,13 @@ def ask_question():
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
-        tag_names = request.form.getlist('tags')
+        tags_raw = request.form.get('tags', '')
+        tag_names = [t.strip() for t in tags_raw.split(',') if t.strip()]
         if not title or not description:
             flash('Title and description are required.', 'danger')
             return render_template('ask.html', tags=Tag.query.all())
         if not tag_names:
-            flash('Please select at least one tag.', 'danger')
+            flash('Please enter at least one tag.', 'danger')
             return render_template('ask.html', tags=Tag.query.all())
         tags = []
         for name in tag_names:

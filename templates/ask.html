@@ -5,19 +5,20 @@
     <title>Ask a Question – StackIt</title>
     <link rel="stylesheet" href="/static/style.css">
     {{ ckeditor.load() }}
+    <script src="/static/ckeditor_hide_upgrade_warning.js"></script>
 </head>
-<body style="background: linear-gradient(120deg, #e0e7ff 0%, #f9fafc 100%); min-height: 100vh;">
-    <nav style="display: flex; align-items: center; gap: 1em; background: #2d3e50; padding: 1em 2em; border-radius: 8px; margin-bottom: 2em;">
-        <a href="/" style="color: #fff; font-weight: bold; font-size: 1.2em; letter-spacing: 1px; text-decoration: none;">StackIt</a>
-        <a href="/ask" style="color: #fff; text-decoration: none;">Ask Question</a>
+<body>
+    <nav class="navbar">
+        <a href="/" class="nav-brand"><i class="fa-solid fa-layer-group"></i> StackIt</a>
+        <a href="/ask" class="nav-btn"><i class="fa-solid fa-circle-question"></i> Ask</a>
         <div class="notification-dropdown" style="position:relative;display:inline-block;">
-    <a href="/notifications" id="notif-bell" style="color: #fff; text-decoration: none; position:relative;">
-        <span style="font-size:1.3em; vertical-align:middle;">&#128276;</span>
-        {% set unread = current_user.notifications|selectattr('is_read', 'equalto', False)|list|length %}
-        {% if unread > 0 %}
-        <span style="background:#e74c3c;color:#fff;border-radius:50%;padding:2px 7px;font-size:0.8em;position:absolute;top:-7px;right:-12px;">{{ unread }}</span>
-        {% endif %}
-    </a>
+            <a href="/notifications" id="notif-bell" style="color: #4f8cff; text-decoration: none; position:relative; font-size:1.3em;">
+                <i class="fa-solid fa-bell"></i>
+                {% set unread = current_user.notifications|selectattr('is_read', 'equalto', False)|list|length %}
+                {% if unread > 0 %}
+                <span style="background:#e74c3c;color:#fff;border-radius:50%;padding:2px 7px;font-size:0.8em;position:absolute;top:-7px;right:-12px;">{{ unread }}</span>
+                {% endif %}
+            </a>
     <div id="notif-dropdown" style="display:none;position:absolute;right:0;top:2.5em;min-width:320px;background:#fff;border-radius:8px;box-shadow:0 2px 16px rgba(0,0,0,0.15);z-index:1000;">
         <div style="padding:1em 1em 0.5em 1em;font-weight:bold;border-bottom:1px solid #eee;">Recent Notifications</div>
         <div style="max-height:250px;overflow-y:auto;">
@@ -69,42 +70,20 @@ document.addEventListener('DOMContentLoaded', function() {
             {% endfor %}
           {% endif %}
         {% endwith %}
-        <form method="post" class="ask-form">
+        <form class="ask-form" method="post">
             <label for="title">Title</label>
-            <input type="text" id="title" name="title" required placeholder="Enter a short, descriptive title">
+            <input type="text" id="title" name="title" placeholder="Enter your question title" required>
 
             <label for="description">Description</label>
-            <div class="ckeditor-wrap">{{ ckeditor.create(name='description', value='') }}</div>
+            <div class="ckeditor-wrap">
+                {{ ckeditor.create('description') }}
+            </div>
 
-            <label for="tags">Tags</label>
-            <select id="tags" name="tags" multiple required>
-    {% for tag in tags %}
-    <option value="{{ tag.name }}">{{ tag.name }}</option>
-    {% endfor %}
-</select>
-<script src="/static/choices.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        new Choices('#tags', {
-            removeItemButton: true,
-            placeholderValue: 'Select relevant tags',
-            searchEnabled: true,
-        });
-    });
-</script>
+            <label for="tags">Tags (comma-separated)</label>
+            <input type="text" id="tags" name="tags" placeholder="e.g. python, flask, database" required>
 
             <button type="submit" class="ask-btn">Submit Question</button>
         </form>
-        {{ ckeditor.config(name='description', config={
-    'toolbar': [
-        ['Bold', 'Italic', 'Strike', 'EmojiPanel', 'NumberedList', 'BulletedList', 'Link', 'ImageUpload', 'Blockquote', 'Undo', 'Redo', 'RemoveFormat', 'JustifyLeft', 'JustifyCenter', 'JustifyRight'],
-        ['FontSize', 'FontColor', 'FontBackgroundColor'],
-    ],
-    'extraPlugins': 'emoji',
-    'imageUploadUrl': url_for('main.upload'),
-    'removePlugins': 'easyimage',
-    'toolbarCanCollapse': True
-}) }}
     </div>
     <style>
         .ask-container {
@@ -128,14 +107,25 @@ document.addEventListener('DOMContentLoaded', function() {
             margin-bottom: 0.25em;
             display: block;
         }
-        .ask-form input[type="text"] {
+        .ask-form input[type="text"],
+        .ask-form textarea {
             width: 100%;
-            padding: 0.9em;
+            padding: 1em 1.1em;
             margin-bottom: 1.5em;
-            border: 1px solid #d1d5db;
-            border-radius: 7px;
-            font-size: 1em;
+            border: 1.5px solid #d1d5db;
+            border-radius: 14px;
+            font-size: 1.08em;
             background: #f4f8fb;
+            box-shadow: 0 2px 16px rgba(44,62,80,0.07);
+            transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+            outline: none;
+            color: #223040;
+        }
+        .ask-form input[type="text"]:focus,
+        .ask-form textarea:focus {
+            border-color: #4f8cff;
+            background: #e9f0fc;
+            box-shadow: 0 4px 24px rgba(79,140,255,0.11);
         }
         .ckeditor-wrap {
             margin-bottom: 1.5em;
@@ -220,6 +210,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     shouldSort: false,
                     maxItemCount: 5
                 });
+            }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.CKEDITOR) {
+                CKEDITOR.replace('description');
             }
         });
     </script>

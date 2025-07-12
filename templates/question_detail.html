@@ -3,63 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ question.title }} – StackIt</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
     {{ ckeditor.load() }}
+    <style>
+        .nav-brand {
+            font-size: 1.5em;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #4f8cff;
+            text-shadow: 0 2px 8px rgba(44,62,80,0.08);
+        }
+        .nav-btn {
+            background: #fff;
+            color: #4f8cff;
+            border: none;
+            border-radius: 6px;
+            padding: 0.4em 1em;
+            margin-left: 0.7em;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(44,62,80,0.06);
+            transition: background 0.18s, color 0.18s;
+        }
+        .nav-btn:hover {
+            background: #4f8cff;
+            color: #fff;
+        }
+        .main-content {
+            max-width: 900px;
+            margin: 2.5em auto 2em auto;
+            padding: 0 1.2em;
+        }
+        .comment-form textarea {
+            width: 100%;
+            min-height: 65px;
+            padding: 1.25em 1.2em;
+            border-radius: 16px;
+            border: 2px solid #e0e7ff;
+            font-size: 1.13em;
+            background: linear-gradient(90deg, #f7faff 0%, #e9f0fc 100%);
+            margin-bottom: 1em;
+            resize: vertical;
+            box-shadow: 0 4px 24px rgba(79,140,255,0.09), 0 1.5px 8px rgba(44,62,80,0.06);
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+            outline: none;
+            color: #223040;
+            font-family: inherit;
+        }
+        .comment-form textarea::placeholder {
+            color: #8ca2c0;
+            opacity: 1;
+            font-size: 1em;
+        }
+        .comment-form textarea:focus {
+            border-color: #4f8cff;
+            background: #f0f6ff;
+            box-shadow: 0 6px 32px rgba(79,140,255,0.16), 0 2px 16px rgba(44,62,80,0.09);
+        }
+        @media (max-width: 700px) {
+            .main-content { padding: 0 0.3em; }
+            .question-detail-container { padding: 0.5em; }
+        }
+    </style>
 </head>
-<body style="background: linear-gradient(120deg, #e0e7ff 0%, #f9fafc 100%); min-height: 100vh;">
-    <nav style="display: flex; align-items: center; gap: 1em; background: #2d3e50; padding: 1em 2em; border-radius: 8px; margin-bottom: 2em;">
-        <a href="/" style="color: #fff; font-weight: bold; font-size: 1.2em; letter-spacing: 1px; text-decoration: none;">StackIt</a>
-        <a href="/ask" style="color: #fff; text-decoration: none;">Ask Question</a>
+<body>
+    <nav class="navbar">
+        <a href="/" class="nav-brand"><i class="fa-solid fa-layer-group"></i> StackIt</a>
+        <a href="/ask" class="nav-btn"><i class="fa-solid fa-circle-question"></i> Ask</a>
         <div class="notification-dropdown" style="position:relative;display:inline-block;">
-    <a href="/notifications" id="notif-bell" style="color: #fff; text-decoration: none; position:relative;">
-        <span style="font-size:1.3em; vertical-align:middle;">&#128276;</span>
-        {% set unread = current_user.notifications|selectattr('is_read', 'equalto', False)|list|length %}
-        {% if unread > 0 %}
-        <span style="background:#e74c3c;color:#fff;border-radius:50%;padding:2px 7px;font-size:0.8em;position:absolute;top:-7px;right:-12px;">{{ unread }}</span>
-        {% endif %}
-    </a>
-    <div id="notif-dropdown" style="display:none;position:absolute;right:0;top:2.5em;min-width:320px;background:#fff;border-radius:8px;box-shadow:0 2px 16px rgba(0,0,0,0.15);z-index:1000;">
-        <div style="padding:1em 1em 0.5em 1em;font-weight:bold;border-bottom:1px solid #eee;">Recent Notifications</div>
-        <div style="max-height:250px;overflow-y:auto;">
-        {% set notifs = current_user.notifications|sort(attribute='created_at', reverse=True)|list %}
-        {% for notif in notifs[:8] %}
-            <div style="padding:0.7em 1em;border-bottom:1px solid #f1f1f1;{% if not notif.is_read %}background:#eaf6ff;{% endif %}">
-                <a href="{{ notif.url or '#' }}" style="color:#222;text-decoration:none;">{{ notif.message }}</a>
-                <div style="font-size:0.85em;color:#888;">{{ notif.created_at.strftime('%b %d, %Y %H:%M') }}</div>
+            <a href="/notifications" id="notif-bell" style="color: #4f8cff; text-decoration: none; position:relative; font-size:1.3em;">
+                <i class="fa-solid fa-bell"></i>
+                {% set unread = current_user.notifications|selectattr('is_read', 'equalto', False)|list|length %}
+                {% if unread > 0 %}
+                <span style="background:#e74c3c;color:#fff;border-radius:50%;padding:2px 7px;font-size:0.8em;position:absolute;top:-7px;right:-12px;">{{ unread }}</span>
+                {% endif %}
+            </a>
+            <div id="notif-dropdown" style="display:none;position:absolute;right:0;top:2.5em;min-width:320px;background:#fff;border-radius:8px;box-shadow:0 2px 16px rgba(0,0,0,0.15);z-index:1000;">
+                <div style="padding:1em 1em 0.5em 1em;font-weight:bold;border-bottom:1px solid #eee;">Recent Notifications</div>
+                <div style="max-height:250px;overflow-y:auto;">
+                {% set notifs = current_user.notifications|sort(attribute='created_at', reverse=True)|list %}
+                {% for notif in notifs[:8] %}
+                    <div style="padding:0.7em 1em;border-bottom:1px solid #f1f1f1;{% if not notif.is_read %}background:#eaf6ff;{% endif %}">
+                        <a href="{{ notif.url or '#' }}" style="color:#222;text-decoration:none;">{{ notif.message }}</a>
+                        <div style="font-size:0.85em;color:#888;">{{ notif.created_at.strftime('%b %d, %Y %H:%M') }}</div>
+                    </div>
+                {% else %}
+                    <div style="padding:1em;color:#888;">No notifications yet.</div>
+                {% endfor %}
+                </div>
+                <div style="text-align:center;padding:0.5em 0;"><a href="/notifications" style="color:#2980b9;text-decoration:none;">View all</a></div>
             </div>
-        {% else %}
-            <div style="padding:1em;color:#888;">No notifications yet.</div>
-        {% endfor %}
         </div>
-        <div style="text-align:center;padding:0.5em 0;"><a href="/notifications" style="color:#2980b9;text-decoration:none;">View all</a></div>
-    </div>
-</div>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    var bell = document.getElementById('notif-bell');
-    var dropdown = document.getElementById('notif-dropdown');
-    if(bell && dropdown) {
-        bell.addEventListener('click', function(e) {
-            e.preventDefault();
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-        });
-        document.addEventListener('click', function(e) {
-            if (!bell.contains(e.target) && !dropdown.contains(e.target)) {
-                dropdown.style.display = 'none';
-            }
-        });
-    }
-});
-</script>
         <span style="flex:1"></span>
         {% if current_user.is_authenticated %}
-            <span style="color: #fff;">Hi, {{ current_user.username }}</span>
-            <a href="/logout" style="color: #fff; text-decoration: none;">Logout</a>
+            <span style="color: #4f8cff; font-weight:600;">Hi, {{ current_user.username }}</span>
+            <a href="/logout" class="nav-btn"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
         {% else %}
-            <a href="/login" style="color: #fff; text-decoration: none;">Login</a>
-            <a href="/register" style="color: #fff; text-decoration: none;">Register</a>
+            <a href="/login" class="nav-btn"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+            <a href="/register" class="nav-btn"><i class="fa-solid fa-user-plus"></i> Register</a>
         {% endif %}
     </nav>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var bell = document.getElementById('notif-bell');
+        var dropdown = document.getElementById('notif-dropdown');
+        if(bell && dropdown) {
+            bell.addEventListener('click', function(e) {
+                e.preventDefault();
+                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            });
+            document.addEventListener('click', function(e) {
+                if (!bell.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.style.display = 'none';
+                }
+            });
+        }
+    });
+    </script>
+    <div class="main-content">
+
     <div class="question-detail-container">
         <div class="question-card-detail">
             <h1 class="question-title-detail">{{ question.title }}</h1>
@@ -115,29 +178,32 @@ document.addEventListener('DOMContentLoaded', function() {
             {% if question.answers %}
             <div class="answers-list">
                 {% for answer in question.answers %}
-                <div class="answer-card{% if question.accepted_answer_id == answer.id %} accepted-answer{% endif %}">
-                    <div class="answer-vote">
-                        <form action="/vote/{{ answer.id }}/upvote" method="post" style="display:inline;">
-                            <button type="submit" class="vote-btn">&#9650;</button>
-                        </form>
-                        <span class="vote-count">{{ answer.votes|length and answer.votes|map(attribute='value')|sum or 0 }}</span>
-                        <form action="/vote/{{ answer.id }}/downvote" method="post" style="display:inline;">
-                            <button type="submit" class="vote-btn">&#9660;</button>
-                        </form>
-                    </div>
-                    <div class="answer-content">{{ answer.content|safe }}</div>
-                    <div class="answer-meta">
-                        <span class="answer-author">by {{ answer.author.username }} <span class="user-rep">({{ answer.author.reputation }} rep)</span></span>
-                        <span class="answer-date">on {{ answer.created_at.strftime('%b %d, %Y') }}</span>
-                        {% if current_user.is_authenticated and question.author.id == current_user.id and question.accepted_answer_id != answer.id %}
-                        <form action="/accept_answer/{{ question.id }}/{{ answer.id }}" method="post" style="display:inline;">
-                            <button type="submit" class="accept-btn">Accept</button>
-                        </form>
-                        {% endif %}
-                        {% if question.accepted_answer_id == answer.id %}
-                        <span class="accepted-badge">Accepted</span>
-                        {% endif %}
-                    </div>
+                <div class="answer-card{% if question.accepted_answer_id == answer.id %} accepted-answer{% endif %}" style="display:flex;gap:1.2em;align-items:flex-start;box-shadow:0 2px 16px rgba(44,62,80,0.10);border-radius:12px;padding:1.4em 1.6em 1.2em 1.2em;border:1.5px solid #e0e7ff;background:#fff;flex-wrap:wrap;">
+    <div class="answer-vote" style="display:flex;flex-direction:column;align-items:center;gap:0.3em;min-width:46px;">
+        <form action="/vote/{{ answer.id }}/upvote" method="post" style="display:inline;">
+            <button type="submit" class="vote-btn" title="Upvote" style="background:none;border:none;cursor:pointer;font-size:1.4em;color:#4f8cff;padding:0.2em 0.3em;border-radius:50%;transition:background 0.18s;"><i class="fa-solid fa-arrow-up"></i></button>
+        </form>
+        <span class="vote-count" style="font-size:1.09em;font-weight:600;color:#34495e;">{{ answer.votes|length and answer.votes|map(attribute='value')|sum or 0 }}</span>
+        <form action="/vote/{{ answer.id }}/downvote" method="post" style="display:inline;">
+            <button type="submit" class="vote-btn" title="Downvote" style="background:none;border:none;cursor:pointer;font-size:1.4em;color:#e74c3c;padding:0.2em 0.3em;border-radius:50%;transition:background 0.18s;"><i class="fa-solid fa-arrow-down"></i></button>
+        </form>
+    </div>
+    <div style="flex:1;min-width:0;">
+        <div class="answer-content" style="font-size:1.12em;color:#223040;margin-bottom:0.7em;line-height:1.7;">{{ answer.content|safe }}</div>
+        <div class="answer-meta" style="display:flex;align-items:center;gap:1.1em;font-size:0.98em;color:#7b8ca8;flex-wrap:wrap;">
+            <span class="answer-author" style="font-weight:500;"><i class="fa-solid fa-user"></i> {{ answer.author.username }} <span class="user-rep" style="margin-left:0.2em;color:#4f8cff;">({{ answer.author.reputation }} rep)</span></span>
+            <span class="answer-date" style="font-style:italic;"><i class="fa-regular fa-clock"></i> {{ answer.created_at.strftime('%b %d, %Y') }}</span>
+            {% if current_user.is_authenticated and question.author.id == current_user.id and question.accepted_answer_id != answer.id %}
+            <form action="/accept_answer/{{ question.id }}/{{ answer.id }}" method="post" style="display:inline;">
+                <button type="submit" class="accept-btn" style="margin-left:0.5em;background:linear-gradient(90deg,#4f8cff 0%,#2d3e50 100%);color:#fff;border:none;border-radius:6px;padding:0.4em 1.1em;font-weight:600;box-shadow:0 2px 8px rgba(44,62,80,0.06);cursor:pointer;transition:background 0.18s;"><i class="fa-solid fa-check"></i> Accept</button>
+            </form>
+            {% endif %}
+            {% if question.accepted_answer_id == answer.id %}
+            <span class="accepted-badge" style="margin-left:0.5em;background:#e9fbe5;color:#2d7a32;border-radius:6px;padding:0.4em 1.1em;font-weight:600;box-shadow:0 2px 8px rgba(44,62,80,0.06);display:inline-flex;align-items:center;"><i class="fa-solid fa-check-double" style="margin-right:0.4em;"></i> Accepted</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
                     <div class="comments-section">
                         <h4 class="comments-title">Comments</h4>
                         {% for comment in answer.comments if not comment.is_deleted %}
