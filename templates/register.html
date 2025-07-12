@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register – StackIt</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .register-container {
+            max-width: 440px;
+            margin: 3em auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 32px rgba(44,62,80,0.11);
+            padding: 2.5em 2em 2em 2em;
+        }
+        .register-container h2 {
+            text-align: center;
+            color: #2d3e50;
+            margin-bottom: 1.5em;
+        }
+        .register-container label {
+            font-weight: 600;
+            color: #34495e;
+        }
+        .register-container input[type="text"],
+        .register-container input[type="email"],
+        .register-container input[type="password"] {
+            width: 100%;
+            padding: 0.8em;
+            margin: 0.5em 0 1.2em 0;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1em;
+            background: #f4f8fb;
+        }
+        .register-container button {
+            width: 100%;
+            padding: 0.9em;
+            background: linear-gradient(90deg, #4f8cff 0%, #2d3e50 100%);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .register-container button:hover {
+            background: linear-gradient(90deg, #2d3e50 0%, #4f8cff 100%);
+        }
+        .register-container .links {
+            margin-top: 1.2em;
+            text-align: center;
+        }
+        .register-container .links a {
+            color: #4f8cff;
+            text-decoration: none;
+            margin: 0 0.5em;
+        }
+        .register-container .links a:hover {
+            text-decoration: underline;
+        }
+        .flash {
+            margin-bottom: 1em;
+            padding: 0.7em 1em;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        .flash-success { background: #e9fbe5; color: #2d7a32; border: 1px solid #b2e2b2; }
+        .flash-danger { background: #fbe5e5; color: #a32d2d; border: 1px solid #e2b2b2; }
+        .flash-info { background: #e5f0fb; color: #2d5aa3; border: 1px solid #b2cbe2; }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h2>Create your StackIt account</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        <form method="post">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required autofocus>
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+            <label for="confirm">Confirm Password</label>
+            <input type="password" id="confirm" name="confirm" required>
+            <button type="submit">Register</button>
+        </form>
+        <div class="links">
+            <a href="/login">Already have an account? Login</a>
+            <a href="/">Back to Home</a>
+        </div>
+    </div>
+</body>
+</html>

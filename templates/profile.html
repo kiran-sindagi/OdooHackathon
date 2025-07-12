@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ user.username }}'s Profile – StackIt</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/">Home</a>
+        {% if current_user.is_authenticated %}
+            <a href="/user/{{ current_user.username }}">My Profile</a>
+            <a href="/logout">Logout</a>
+        {% else %}
+            <a href="/login">Login</a>
+            <a href="/register">Register</a>
+        {% endif %}
+    </nav>
+    <div class="profile-container">
+        <div class="profile-header">
+            <img src="{{ user.avatar_url or '/static/default_avatar.png' }}" class="profile-avatar" alt="avatar">
+            <div class="profile-info">
+                <h1>{{ user.username }} <span class="profile-rep">({{ user.reputation }} rep)</span></h1>
+                <p class="profile-bio">{{ user.bio or 'No bio yet.' }}</p>
+                {% if current_user.is_authenticated and current_user.id == user.id %}
+                    <a href="/user/{{ user.username }}/edit" class="edit-profile-btn">Edit Profile</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="profile-section">
+            <h2>Questions</h2>
+            {% if questions %}
+                <ul class="profile-list">
+                {% for q in questions %}
+                    <li><a href="/question/{{ q.id }}">{{ q.title }}</a> <span class="profile-date">({{ q.created_at.strftime('%b %d, %Y') }})</span></li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <p>No questions asked yet.</p>
+            {% endif %}
+        </div>
+        <div class="profile-section">
+            <h2>Answers</h2>
+            {% if answers %}
+                <ul class="profile-list">
+                {% for a in answers %}
+                    <li>On <a href="/question/{{ a.question.id }}">{{ a.question.title }}</a> <span class="profile-date">({{ a.created_at.strftime('%b %d, %Y') }})</span></li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <p>No answers posted yet.</p>
+            {% endif %}
+        </div>
+        <div class="profile-section">
+            <h2>Comments</h2>
+            {% if comments %}
+                <ul class="profile-list">
+                {% for c in comments if not c.is_deleted %}
+                    <li>{{ c.content }} <span class="profile-date">({{ c.created_at.strftime('%b %d, %Y') }})</span></li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <p>No comments yet.</p>
+            {% endif %}
+        </div>
+    </div>
+    <style>
+        .profile-container { max-width: 700px; margin: 3em auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 16px rgba(44,62,80,0.10); padding: 2.5em 2.2em; }
+        .profile-header { display: flex; align-items: center; gap: 2em; margin-bottom: 2em; }
+        .profile-avatar { width: 96px; height: 96px; border-radius: 50%; border: 2px solid #e0e7ff; object-fit: cover; }
+        .profile-info h1 { margin-bottom: 0.2em; }
+        .profile-rep { color: #4f8cff; font-size: 0.85em; font-weight: 600; }
+        .profile-bio { color: #223040; font-size: 1.1em; margin-bottom: 0.5em; }
+        .edit-profile-btn { background: #4f8cff; color: #fff; padding: 0.3em 1.2em; border-radius: 6px; text-decoration: none; font-size: 0.97em; }
+        .profile-section { margin-bottom: 2em; }
+        .profile-section h2 { color: #2d3e50; font-size: 1.18em; margin-bottom: 0.7em; }
+        .profile-list { list-style: none; padding: 0; }
+        .profile-list li { margin-bottom: 0.5em; }
+        .profile-date { color: #7b8ca8; font-size: 0.95em; margin-left: 0.5em; }
+    </style>
+</body>
+</html>

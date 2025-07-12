@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Reports – StackIt</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/">Home</a>
+        <a href="/admin">Admin Panel</a>
+        <a href="/logout">Logout</a>
+    </nav>
+    <div class="admin-section">
+        <h1>Content Reports</h1>
+        {% if reports %}
+        <table class="admin-table">
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Target</th>
+                <th>Reason</th>
+                <th>Reporter</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+            {% for r in reports %}
+            <tr>
+                <td>{{ r.id }}</td>
+                <td>
+                    {% if r.question_id %}Question{% elif r.answer_id %}Answer{% elif r.comment_id %}Comment{% endif %}
+                </td>
+                <td>
+                    {% if r.question_id %}<a href="/question/{{ r.question_id }}">Q#{{ r.question_id }}</a>{% endif %}
+                    {% if r.answer_id %}<a href="/question/{{ r.answer.question.id }}">A#{{ r.answer_id }}</a>{% endif %}
+                    {% if r.comment_id %}Comment#{{ r.comment_id }}{% endif %}
+                </td>
+                <td>{{ r.reason }}</td>
+                <td>{{ r.reporter.username }}</td>
+                <td>{{ r.status }}</td>
+                <td>{{ r.created_at.strftime('%b %d, %Y %H:%M') }}</td>
+                <td>
+                    {% if r.status == 'pending' %}
+                    <form action="/admin/reports/{{ r.id }}/review" method="post" style="display:inline;"><button type="submit">Mark Reviewed</button></form>
+                    <form action="/admin/reports/{{ r.id }}/dismiss" method="post" style="display:inline;"><button type="submit">Dismiss</button></form>
+                    {% else %}
+                    <span style="color:#7b8ca8;">No actions</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p>No reports found.</p>
+        {% endif %}
+    </div>
+    <style>
+        .admin-section { max-width: 900px; margin: 3em auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 16px rgba(44,62,80,0.10); padding: 2.5em 2.2em; }
+        .admin-table { width:100%; border-collapse:collapse; margin-bottom:1em; }
+        .admin-table th, .admin-table td { border:1px solid #e0e7ff; padding:0.6em 1em; text-align:left; }
+        button { margin-right: 0.5em; }
+    </style>
+</body>
+</html>

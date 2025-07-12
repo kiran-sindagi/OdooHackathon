@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ question.title }} – StackIt</title>
+    <link rel="stylesheet" href="/static/style.css">
+    {{ ckeditor.load() }}
+</head>
+<body style="background: linear-gradient(120deg, #e0e7ff 0%, #f9fafc 100%); min-height: 100vh;">
+    <nav style="display: flex; align-items: center; gap: 1em; background: #2d3e50; padding: 1em 2em; border-radius: 8px; margin-bottom: 2em;">
+        <a href="/" style="color: #fff; font-weight: bold; font-size: 1.2em; letter-spacing: 1px; text-decoration: none;">StackIt</a>
+        <a href="/ask" style="color: #fff; text-decoration: none;">Ask Question</a>
+        <div class="notification-dropdown" style="position:relative;display:inline-block;">
+    <a href="/notifications" id="notif-bell" style="color: #fff; text-decoration: none; position:relative;">
+        <span style="font-size:1.3em; vertical-align:middle;">&#128276;</span>
+        {% set unread = current_user.notifications|selectattr('is_read', 'equalto', False)|list|length %}
+        {% if unread > 0 %}
+        <span style="background:#e74c3c;color:#fff;border-radius:50%;padding:2px 7px;font-size:0.8em;position:absolute;top:-7px;right:-12px;">{{ unread }}</span>
+        {% endif %}
+    </a>
+    <div id="notif-dropdown" style="display:none;position:absolute;right:0;top:2.5em;min-width:320px;background:#fff;border-radius:8px;box-shadow:0 2px 16px rgba(0,0,0,0.15);z-index:1000;">
+        <div style="padding:1em 1em 0.5em 1em;font-weight:bold;border-bottom:1px solid #eee;">Recent Notifications</div>
+        <div style="max-height:250px;overflow-y:auto;">
+        {% set notifs = current_user.notifications|sort(attribute='created_at', reverse=True)|list %}
+        {% for notif in notifs[:8] %}
+            <div style="padding:0.7em 1em;border-bottom:1px solid #f1f1f1;{% if not notif.is_read %}background:#eaf6ff;{% endif %}">
+                <a href="{{ notif.url or '#' }}" style="color:#222;text-decoration:none;">{{ notif.message }}</a>
+                <div style="font-size:0.85em;color:#888;">{{ notif.created_at.strftime('%b %d, %Y %H:%M') }}</div>
+            </div>
+        {% else %}
+            <div style="padding:1em;color:#888;">No notifications yet.</div>
+        {% endfor %}
+        </div>
+        <div style="text-align:center;padding:0.5em 0;"><a href="/notifications" style="color:#2980b9;text-decoration:none;">View all</a></div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var bell = document.getElementById('notif-bell');
+    var dropdown = document.getElementById('notif-dropdown');
+    if(bell && dropdown) {
+        bell.addEventListener('click', function(e) {
+            e.preventDefault();
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        });
+        document.addEventListener('click', function(e) {
+            if (!bell.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
+        <span style="flex:1"></span>
+        {% if current_user.is_authenticated %}
+            <span style="color: #fff;">Hi, {{ current_user.username }}</span>
+            <a href="/logout" style="color: #fff; text-decoration: none;">Logout</a>
+        {% else %}
+            <a href="/login" style="color: #fff; text-decoration: none;">Login</a>
+            <a href="/register" style="color: #fff; text-decoration: none;">Register</a>
+        {% endif %}
+    </nav>
+    <div class="question-detail-container">
+        <div class="question-card-detail">
+            <h1 class="question-title-detail">{{ question.title }}</h1>
+            <div class="question-meta-detail">
+                <span class="question-author-detail">Asked by {{ question.author.username }}</span>
+                <span class="question-date-detail">on {{ question.created_at.strftime('%b %d, %Y') }}</span>
+            </div>
+            <div class="question-description-detail">{{ question.description|safe }}</div>
+            {% if question.tags %}
+            <div class="question-tags-detail">
+                {% for tag in question.tags %}
+                <span class="tag-badge">{{ tag.name }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <div class="comments-section">
+                <h3 class="comments-title">Comments</h3>
+                {% for comment in question.comments if not comment.is_deleted %}
+                <div class="comment-item">
+                    <span class="comment-author">{{ comment.user.username }}</span>:
+                    <span class="comment-content">{{ comment.content }}</span>
+                    <span class="comment-date">{{ comment.created_at.strftime('%b %d, %Y %H:%M') }}</span>
+                            {% if current_user.is_authenticated and current_user.id != comment.user_id %}
+                            <form action="/report/comment/{{ comment.id }}" method="post" style="display:inline; margin-left:1em;">
+                                <input type="text" name="reason" placeholder="Report reason" required style="width:110px;">
+                                <button type="submit" class="report-btn">Report</button>
+                            </form>
+                            {% endif %}
+                    {% if current_user.is_authenticated and (current_user.id == comment.user_id or 'admin' in current_user.roles|map(attribute='name')) %}
+                    <form action="/comment/delete/{{ comment.id }}" method="post" style="display:inline;"><button type="submit" class="delete-comment-btn">Delete</button></form>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% if current_user.is_authenticated %}
+                <form action="/comment/question/{{ question.id }}" method="post" class="comment-form">
+                    <textarea name="comment" rows="2" placeholder="Add a comment..."></textarea>
+                    <button type="submit">Post Comment</button>
+                </form>
+                {% else %}
+                <p class="login-to-comment"><a href="/login">Log in</a> to comment.</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="answers-section">
+            <h2 class="answers-title">Answers</h2>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="flash flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+            {% if question.answers %}
+            <div class="answers-list">
+                {% for answer in question.answers %}
+                <div class="answer-card{% if question.accepted_answer_id == answer.id %} accepted-answer{% endif %}">
+                    <div class="answer-vote">
+                        <form action="/vote/{{ answer.id }}/upvote" method="post" style="display:inline;">
+                            <button type="submit" class="vote-btn">&#9650;</button>
+                        </form>
+                        <span class="vote-count">{{ answer.votes|length and answer.votes|map(attribute='value')|sum or 0 }}</span>
+                        <form action="/vote/{{ answer.id }}/downvote" method="post" style="display:inline;">
+                            <button type="submit" class="vote-btn">&#9660;</button>
+                        </form>
+                    </div>
+                    <div class="answer-content">{{ answer.content|safe }}</div>
+                    <div class="answer-meta">
+                        <span class="answer-author">by {{ answer.author.username }} <span class="user-rep">({{ answer.author.reputation }} rep)</span></span>
+                        <span class="answer-date">on {{ answer.created_at.strftime('%b %d, %Y') }}</span>
+                        {% if current_user.is_authenticated and question.author.id == current_user.id and question.accepted_answer_id != answer.id %}
+                        <form action="/accept_answer/{{ question.id }}/{{ answer.id }}" method="post" style="display:inline;">
+                            <button type="submit" class="accept-btn">Accept</button>
+                        </form>
+                        {% endif %}
+                        {% if question.accepted_answer_id == answer.id %}
+                        <span class="accepted-badge">Accepted</span>
+                        {% endif %}
+                    </div>
+                    <div class="comments-section">
+                        <h4 class="comments-title">Comments</h4>
+                        {% for comment in answer.comments if not comment.is_deleted %}
+                        <div class="comment-item">
+                            <span class="comment-author">{{ comment.user.username }}</span>:
+                            <span class="comment-content">{{ comment.content }}</span>
+                            <span class="comment-date">{{ comment.created_at.strftime('%b %d, %Y %H:%M') }}</span>
+                            {% if current_user.is_authenticated and current_user.id != comment.user_id %}
+                            <form action="/report/comment/{{ comment.id }}" method="post" style="display:inline; margin-left:1em;">
+                                <input type="text" name="reason" placeholder="Report reason" required style="width:110px;">
+                                <button type="submit" class="report-btn">Report</button>
+                            </form>
+                            {% endif %}
+                            {% if current_user.is_authenticated and (current_user.id == comment.user_id or 'admin' in current_user.roles|map(attribute='name')) %}
+                            <form action="/comment/delete/{{ comment.id }}" method="post" style="display:inline;"><button type="submit" class="delete-comment-btn">Delete</button></form>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        {% if current_user.is_authenticated %}
+                        <form action="/comment/answer/{{ answer.id }}" method="post" class="comment-form">
+                            <textarea name="comment" rows="2" placeholder="Add a comment..."></textarea>
+                            <button type="submit">Post Comment</button>
+                        </form>
+                        {% else %}
+                        <p class="login-to-comment"><a href="/login">Log in</a> to comment.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-answers">No answers yet. Be the first to answer!</div>
+            {% endif %}
+            {% if current_user.is_authenticated %}
+            <form action="/answer/{{ question.id }}" method="post" class="answer-form">
+                <label for="content" class="answer-label">Your Answer</label>
+                <div class="ckeditor-wrap">{{ ckeditor.create(name='content', value='') }}</div>
+                {{ ckeditor.config(name='content', config={
+                    'toolbar': [
+                        ['Bold', 'Italic', 'Strike', 'EmojiPanel', 'NumberedList', 'BulletedList', 'Link', 'ImageUpload', 'Blockquote', 'Undo', 'Redo', 'RemoveFormat', 'JustifyLeft', 'JustifyCenter', 'JustifyRight'],
+                        ['FontSize', 'FontColor', 'FontBackgroundColor'],
+                    ],
+                    'extraPlugins': 'emoji',
+                    'imageUploadUrl': url_for('main.upload'),
+                    'removePlugins': 'easyimage',
+                    'toolbarCanCollapse': True
+                }) }}
+                <button type="submit" class="answer-btn">Submit Answer</button>
+            </form>
+            {{ ckeditor.config(name='content') }}
+            {% else %}
+            <p class="login-to-answer"><a href="/login">Log in</a> to answer.</p>
+            {% endif %}
+        </div>
+    </div>
+    <style>
+        .question-detail-container {
+            max-width: 800px;
+            margin: 3em auto 2em auto;
+        }
+        .question-card-detail {
+            background: linear-gradient(90deg, #f7faff 0%, #e9f0fc 100%);
+            border-radius: 14px;
+            box-shadow: 0 2px 16px rgba(44,62,80,0.10);
+            padding: 2.1em 2em 1.7em 2em;
+            border: 1.5px solid #e0e7ff;
+            margin-bottom: 2.2em;
+        }
+        .question-title-detail {
+            color: #2d3e50;
+            font-size: 2em;
+            margin-bottom: 0.3em;
+        }
+        .question-meta-detail {
+            font-size: 1.05em;
+            color: #7b8ca8;
+            margin-bottom: 1em;
+        }
+        .question-author-detail {
+            font-weight: 500;
+        }
+        .question-date-detail {
+            margin-left: 0.7em;
+            font-style: italic;
+        }
+        .question-description-detail {
+            font-size: 1.15em;
+            color: #223040;
+            margin-bottom: 1em;
+            line-height: 1.7;
+        }
+        .question-tags-detail {
+            margin-bottom: 0.3em;
+        }
+        .tag-badge {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #2d3e50;
+            border-radius: 6px;
+            padding: 0.18em 0.75em;
+            font-size: 0.97em;
+            margin-right: 0.35em;
+            margin-bottom: 0.15em;
+            font-weight: 500;
+            letter-spacing: 0.1px;
+            border: 1px solid #d1d5db;
+        }
+        .answers-section {
+            margin-top: 1.5em;
+        }
+        .answers-title {
+            color: #4f8cff;
+            font-size: 1.35em;
+            margin-bottom: 1.1em;
+            letter-spacing: 0.2px;
+        }
+        .answers-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.1em;
+        }
+        .answer-card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 1px 8px rgba(44,62,80,0.06);
+            padding: 1.2em 1.1em 0.8em 1.1em;
+            border: 1px solid #e0e7ff;
+        }
+        .answer-content {
+            font-size: 1.08em;
+            color: #223040;
+            margin-bottom: 0.7em;
+            line-height: 1.6;
+        }
+        .answer-meta {
+            font-size: 0.97em;
+            color: #7b8ca8;
+        }
+        .answer-author {
+            font-weight: 500;
+        }
+        .answer-date {
+            margin-left: 0.7em;
+            font-style: italic;
+        }
+        .no-answers {
+            text-align: center;
+            color: #7b8ca8;
+            font-size: 1.1em;
+            margin-bottom: 1.5em;
+        }
+        .answer-form {
+            margin-top: 2.1em;
+            background: #f7faff;
+            border-radius: 10px;
+            box-shadow: 0 1px 8px rgba(44,62,80,0.06);
+            padding: 1.4em 1.1em 1.2em 1.1em;
+            border: 1px solid #e0e7ff;
+        }
+        .answer-label {
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 0.25em;
+            display: block;
+            font-size: 1.07em;
+        }
+        .ckeditor-wrap {
+            margin-bottom: 1.2em;
+        }
+        .answer-btn {
+            width: 100%;
+            padding: 1em;
+            background: linear-gradient(90deg, #4f8cff 0%, #2d3e50 100%);
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            font-size: 1.08em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 0.5em;
+        }
+        .answer-btn:hover {
+            background: linear-gradient(90deg, #2d3e50 0%, #4f8cff 100%);
+        }
+        .flash {
+            margin-bottom: 1em;
+            padding: 0.7em 1em;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        .flash-success { background: #e9fbe5; color: #2d7a32; border: 1px solid #b2e2b2; }
+        .flash-danger { background: #fbe5e5; color: #a32d2d; border: 1px solid #e2b2b2; }
+        .flash-info { background: #e5f0fb; color: #2d5aa3; border: 1px solid #b2cbe2; }
+        .login-to-answer {
+            text-align: center;
+            margin-top: 2em;
+            font-size: 1.09em;
+        }
+        .login-to-answer a {
+            color: #4f8cff;
+            text-decoration: underline;
+        }
+    </style>
+</body>
+</html>

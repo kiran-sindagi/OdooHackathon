@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ask a Question – StackIt</title>
+    <link rel="stylesheet" href="/static/style.css">
+    {{ ckeditor.load() }}
+</head>
+<body style="background: linear-gradient(120deg, #e0e7ff 0%, #f9fafc 100%); min-height: 100vh;">
+    <nav style="display: flex; align-items: center; gap: 1em; background: #2d3e50; padding: 1em 2em; border-radius: 8px; margin-bottom: 2em;">
+        <a href="/" style="color: #fff; font-weight: bold; font-size: 1.2em; letter-spacing: 1px; text-decoration: none;">StackIt</a>
+        <a href="/ask" style="color: #fff; text-decoration: none;">Ask Question</a>
+        <div class="notification-dropdown" style="position:relative;display:inline-block;">
+    <a href="/notifications" id="notif-bell" style="color: #fff; text-decoration: none; position:relative;">
+        <span style="font-size:1.3em; vertical-align:middle;">&#128276;</span>
+        {% set unread = current_user.notifications|selectattr('is_read', 'equalto', False)|list|length %}
+        {% if unread > 0 %}
+        <span style="background:#e74c3c;color:#fff;border-radius:50%;padding:2px 7px;font-size:0.8em;position:absolute;top:-7px;right:-12px;">{{ unread }}</span>
+        {% endif %}
+    </a>
+    <div id="notif-dropdown" style="display:none;position:absolute;right:0;top:2.5em;min-width:320px;background:#fff;border-radius:8px;box-shadow:0 2px 16px rgba(0,0,0,0.15);z-index:1000;">
+        <div style="padding:1em 1em 0.5em 1em;font-weight:bold;border-bottom:1px solid #eee;">Recent Notifications</div>
+        <div style="max-height:250px;overflow-y:auto;">
+        {% set notifs = current_user.notifications|sort(attribute='created_at', reverse=True)|list %}
+        {% for notif in notifs[:8] %}
+            <div style="padding:0.7em 1em;border-bottom:1px solid #f1f1f1;{% if not notif.is_read %}background:#eaf6ff;{% endif %}">
+                <a href="{{ notif.url or '#' }}" style="color:#222;text-decoration:none;">{{ notif.message }}</a>
+                <div style="font-size:0.85em;color:#888;">{{ notif.created_at.strftime('%b %d, %Y %H:%M') }}</div>
+            </div>
+        {% else %}
+            <div style="padding:1em;color:#888;">No notifications yet.</div>
+        {% endfor %}
+        </div>
+        <div style="text-align:center;padding:0.5em 0;"><a href="/notifications" style="color:#2980b9;text-decoration:none;">View all</a></div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var bell = document.getElementById('notif-bell');
+    var dropdown = document.getElementById('notif-dropdown');
+    if(bell && dropdown) {
+        bell.addEventListener('click', function(e) {
+            e.preventDefault();
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        });
+        document.addEventListener('click', function(e) {
+            if (!bell.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
+        <span style="flex:1"></span>
+        {% if current_user.is_authenticated %}
+            <span style="color: #fff;">Hi, {{ current_user.username }}</span>
+            <a href="/logout" style="color: #fff; text-decoration: none;">Logout</a>
+        {% else %}
+            <a href="/login" style="color: #fff; text-decoration: none;">Login</a>
+            <a href="/register" style="color: #fff; text-decoration: none;">Register</a>
+        {% endif %}
+    </nav>
+    <div class="ask-container">
+        <h1 class="ask-title">Ask a Question</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        <form method="post" class="ask-form">
+            <label for="title">Title</label>
+            <input type="text" id="title" name="title" required placeholder="Enter a short, descriptive title">
+
+            <label for="description">Description</label>
+            <div class="ckeditor-wrap">{{ ckeditor.create(name='description', value='') }}</div>
+
+            <label for="tags">Tags</label>
+            <select id="tags" name="tags" multiple required>
+    {% for tag in tags %}
+    <option value="{{ tag.name }}">{{ tag.name }}</option>
+    {% endfor %}
+</select>
+<script src="/static/choices.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        new Choices('#tags', {
+            removeItemButton: true,
+            placeholderValue: 'Select relevant tags',
+            searchEnabled: true,
+        });
+    });
+</script>
+
+            <button type="submit" class="ask-btn">Submit Question</button>
+        </form>
+        {{ ckeditor.config(name='description', config={
+    'toolbar': [
+        ['Bold', 'Italic', 'Strike', 'EmojiPanel', 'NumberedList', 'BulletedList', 'Link', 'ImageUpload', 'Blockquote', 'Undo', 'Redo', 'RemoveFormat', 'JustifyLeft', 'JustifyCenter', 'JustifyRight'],
+        ['FontSize', 'FontColor', 'FontBackgroundColor'],
+    ],
+    'extraPlugins': 'emoji',
+    'imageUploadUrl': url_for('main.upload'),
+    'removePlugins': 'easyimage',
+    'toolbarCanCollapse': True
+}) }}
+    </div>
+    <style>
+        .ask-container {
+            max-width: 650px;
+            margin: 3em auto 2em auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 40px rgba(44,62,80,0.10);
+            padding: 2.5em 2.3em 2em 2.3em;
+        }
+        .ask-title {
+            text-align: center;
+            color: #2d3e50;
+            margin-bottom: 1.2em;
+            font-size: 2.1em;
+            letter-spacing: 0.5px;
+        }
+        .ask-form label {
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 0.25em;
+            display: block;
+        }
+        .ask-form input[type="text"] {
+            width: 100%;
+            padding: 0.9em;
+            margin-bottom: 1.5em;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            font-size: 1em;
+            background: #f4f8fb;
+        }
+        .ckeditor-wrap {
+            margin-bottom: 1.5em;
+        }
+        .ask-btn {
+            width: 100%;
+            padding: 1em;
+            background: linear-gradient(90deg, #4f8cff 0%, #2d3e50 100%);
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            font-size: 1.15em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 0.5em;
+        }
+        .ask-btn:hover {
+            background: linear-gradient(90deg, #2d3e50 0%, #4f8cff 100%);
+        }
+        .flash {
+            margin-bottom: 1em;
+            padding: 0.7em 1em;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        .flash-success { background: #e9fbe5; color: #2d7a32; border: 1px solid #b2e2b2; }
+        .flash-danger { background: #fbe5e5; color: #a32d2d; border: 1px solid #e2b2b2; }
+        .flash-info { background: #e5f0fb; color: #2d5aa3; border: 1px solid #b2cbe2; }
+        /* CKEditor Custom Styling */
+        .cke{
+            border-radius: 10px !important;
+            box-shadow: 0 2px 16px rgba(44,62,80,0.12) !important;
+            border: 1.5px solid #d1d5db !important;
+            background: #f7faff !important;
+            padding-bottom: 2px;
+        }
+        .cke_top{
+            background: linear-gradient(90deg, #e9f0fc 0%, #f7faff 100%) !important;
+            border-radius: 10px 10px 0 0 !important;
+            border-bottom: 1px solid #d1d5db !important;
+            padding: 0.3em 0.7em !important;
+        }
+        .cke_contents{
+            background: #fff !important;
+            border-radius: 0 0 10px 10px !important;
+            padding: 0.7em !important;
+            min-height: 180px !important;
+        }
+        .cke_button__emoji_icon{
+            filter: grayscale(0.3) brightness(1.2);
+        }
+        .cke_focus{
+            box-shadow: 0 0 0 2px #4f8cff !important;
+            border-color: #4f8cff !important;
+        }
+        .cke_editable{
+            font-size: 1.08em !important;
+            color: #2d3e50 !important;
+            line-height: 1.6 !important;
+            padding: 0.5em !important;
+        }
+        .cke_button, .cke_combo {
+            border-radius: 5px !important;
+            transition: background 0.2s;
+        }
+        .cke_button:hover, .cke_combo:hover {
+            background: #e0e7ff !important;
+        }
+    </style>
+    <link rel="stylesheet" href="/static/choices.min.css">
+    <script src="/static/choices.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var tagSelect = document.getElementById('tags');
+            if(tagSelect) {
+                new Choices(tagSelect, {
+                    removeItemButton: true,
+                    placeholder: true,
+                    placeholderValue: 'Select tags',
+                    searchEnabled: true,
+                    shouldSort: false,
+                    maxItemCount: 5
+                });
+            }
+        });
+    </script>
+</body>
+</html>
