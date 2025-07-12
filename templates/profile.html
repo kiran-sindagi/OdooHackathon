@@ -2,25 +2,121 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ user.username }}'s Profile – StackIt</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+        .bg-elements {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;
+        }
+        .floating-circle {
+            position: absolute; border-radius: 50%; background: rgba(255,255,255,0.1); animation: float 6s ease-in-out infinite;
+        }
+        .circle-1 { width: 80px; height: 80px; top: 20%; left: 10%; animation-delay: 0s; }
+        .circle-2 { width: 120px; height: 120px; top: 60%; right: 15%; animation-delay: 2s; }
+        .circle-3 { width: 60px; height: 60px; bottom: 20%; left: 20%; animation-delay: 4s; }
+        .circle-4 { width: 100px; height: 100px; top: 40%; right: 25%; animation-delay: 1s; }
+        @keyframes float { 0%,100%{transform:translateY(0) rotate(0deg);} 50%{transform:translateY(-20px) rotate(180deg);} }
+        .particles {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none;
+        }
+        .particle {
+            position: absolute; width: 4px; height: 4px; background: rgba(255,255,255,0.5); border-radius: 50%; animation: particleFloat 8s linear infinite;
+        }
+        @keyframes particleFloat {
+            0%{transform:translateY(100vh) rotate(0deg);opacity:0;} 10%{opacity:1;} 90%{opacity:1;} 100%{transform:translateY(-100px) rotate(360deg);opacity:0;}
+        }
+        .nav-container {
+            position: relative; z-index: 10; background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 32px rgba(31,38,135,0.37); margin: 2em; padding: 1.5em 2em; display: flex; align-items: center; gap: 1.5em;
+        }
+        .nav-brand {
+            color: #fff; font-weight: 700; font-size: 1.4em; letter-spacing: 2px; text-decoration: none; text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .nav-links { display: flex; align-items: center; gap: 1.5em; }
+        .nav-link {
+            color: rgba(255,255,255,0.8); text-decoration: none; font-weight: 500; transition: all 0.3s ease; position: relative; padding: 0.5em 1em; border-radius: 8px;
+        }
+        .nav-link::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 2px; background: linear-gradient(90deg,#ff6b6b,#4ecdc4); transition: width 0.3s ease; }
+        .nav-link:hover::after { width: 100%; }
+        .nav-link:hover { color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5); background: rgba(255,255,255,0.1); }
+        .nav-spacer { flex: 1; }
+        .user-info { color: rgba(255,255,255,0.9); font-weight: 500; }
+        .profile-container {
+            max-width: 700px; margin: 3em auto; background: rgba(255,255,255,0.1); border-radius: 20px; box-shadow: 0 8px 32px rgba(31,38,135,0.17); padding: 2.5em 2.2em; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2); position: relative; z-index: 10;
+        }
+        .profile-header { display: flex; align-items: center; gap: 2em; margin-bottom: 2em; }
+        .profile-avatar { width: 96px; height: 96px; border-radius: 50%; border: 3px solid #4ecdc4; object-fit: cover; box-shadow: 0 2px 12px rgba(78,205,196,0.15); background: #fff; }
+        .profile-info h1 { margin-bottom: 0.2em; color: #fff; font-size: 1.5em; font-weight: 700; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        .profile-rep { color: #4ecdc4; font-size: 0.95em; font-weight: 600; }
+        .profile-bio { color: #fff; font-size: 1.1em; margin-bottom: 0.5em; background: rgba(255,255,255,0.08); border-radius: 10px; padding: 0.7em 1em; box-shadow: 0 2px 10px rgba(31,38,135,0.07); }
+        .edit-profile-btn { background: linear-gradient(135deg,#ff6b6b,#4ecdc4); color: #fff; padding: 0.3em 1.2em; border-radius: 8px; text-decoration: none; font-size: 0.97em; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(31,38,135,0.07); }
+        .edit-profile-btn:hover { background: linear-gradient(135deg,#4ecdc4,#ff6b6b); }
+        .profile-section { margin-bottom: 2em; background: rgba(255,255,255,0.08); border-radius: 14px; padding: 1.2em 1em; box-shadow: 0 2px 10px rgba(31,38,135,0.07); }
+        .profile-section h2 { color: #4ecdc4; font-size: 1.18em; margin-bottom: 0.7em; letter-spacing: 0.5px; }
+        .profile-list { list-style: none; padding: 0; }
+        .profile-list li { margin-bottom: 0.5em; color: #fff; font-size: 1.05em; }
+        .profile-list a { color: #fff; text-decoration: underline; font-weight: 500; transition: color 0.2s; }
+        .profile-list a:hover { color: #4ecdc4; }
+        .profile-date { color: #b2b2b2; font-size: 0.95em; margin-left: 0.5em; }
+        /* Mobile Responsive */
+        @media (max-width: 700px) {
+            .profile-container { padding: 1.2em 0.5em; border-radius: 12px; }
+            .profile-header { flex-direction: column; gap: 1em; align-items: flex-start; }
+            .profile-avatar { width: 72px; height: 72px; }
+            .profile-info h1 { font-size: 1.1em; }
+            .profile-bio { font-size: 1em; padding: 0.5em 0.7em; }
+            .profile-section { padding: 0.7em 0.5em; border-radius: 8px; }
+            .profile-section h2 { font-size: 1em; }
+            .profile-list li { font-size: 0.95em; }
+        }
+        @media (max-width: 400px) {
+            .nav-container { margin: 0; padding: 0.5em 0.2em; border-radius: 0; }
+            .profile-container { margin: 0; padding: 0.5em 0.1em; border-radius: 0; }
+            .profile-header { gap: 0.5em; }
+            .profile-avatar { width: 48px; height: 48px; }
+            .profile-info h1 { font-size: 0.95em; }
+            .profile-bio { font-size: 0.9em; padding: 0.3em 0.3em; }
+            .profile-section { padding: 0.4em 0.2em; border-radius: 5px; }
+            .profile-section h2 { font-size: 0.9em; }
+            .profile-list li { font-size: 0.85em; }
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar">
-        <a href="/" class="nav-brand"><i class="fa-solid fa-layer-group"></i> StackIt</a>
-        <a href="/ask" class="nav-btn"><i class="fa-solid fa-circle-question"></i> Ask</a>
-        <span style="flex:1"></span>
-        {% if current_user.is_authenticated %}
-            <span style="color: #4f8cff; font-weight:600;">Hi, {{ current_user.username }}</span>
-            <a href="/logout" class="nav-btn"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
-        {% else %}
-            <a href="/login" class="nav-btn"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
-            <a href="/register" class="nav-btn"><i class="fa-solid fa-user-plus"></i> Register</a>
-        {% endif %}
+    <!-- Animated background elements -->
+    <div class="bg-elements">
+        <div class="floating-circle circle-1"></div>
+        <div class="floating-circle circle-2"></div>
+        <div class="floating-circle circle-3"></div>
+        <div class="floating-circle circle-4"></div>
+    </div>
+    <!-- Particle effects -->
+    <div class="particles" id="particles"></div>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <a href="/" class="nav-brand">Home</a>
+        <div class="nav-links">
+            {% if current_user.is_authenticated %}
+                <a href="/user/{{ current_user.username }}" class="nav-link">My Profile</a>
+                <a href="/logout" class="nav-link">Logout</a>
+            {% else %}
+                <a href="/login" class="nav-link">Login</a>
+                <a href="/register" class="nav-link">Register</a>
+            {% endif %}
+        </div>
     </nav>
-    <div class="main-content">
+    <div class="profile-container">
         <div class="profile-header">
-            <img src="{{ user.avatar_url or '/static/default_avatar.png' }}" class="profile-avatar" alt="avatar">
+            <img src="{{ user.avatar_url or 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg' }}" class="profile-avatar" alt="avatar">
             <div class="profile-info">
                 <h1>{{ user.username }} <span class="profile-rep">({{ user.reputation }} rep)</span></h1>
                 <p class="profile-bio">{{ user.bio or 'No bio yet.' }}</p>
@@ -66,19 +162,23 @@
             {% endif %}
         </div>
     </div>
-    <style>
-        .profile-container { max-width: 700px; margin: 3em auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 16px rgba(44,62,80,0.10); padding: 2.5em 2.2em; }
-        .profile-header { display: flex; align-items: center; gap: 2em; margin-bottom: 2em; }
-        .profile-avatar { width: 96px; height: 96px; border-radius: 50%; border: 2px solid #e0e7ff; object-fit: cover; }
-        .profile-info h1 { margin-bottom: 0.2em; }
-        .profile-rep { color: #4f8cff; font-size: 0.85em; font-weight: 600; }
-        .profile-bio { color: #223040; font-size: 1.1em; margin-bottom: 0.5em; }
-        .edit-profile-btn { background: #4f8cff; color: #fff; padding: 0.3em 1.2em; border-radius: 6px; text-decoration: none; font-size: 0.97em; }
-        .profile-section { margin-bottom: 2em; }
-        .profile-section h2 { color: #2d3e50; font-size: 1.18em; margin-bottom: 0.7em; }
-        .profile-list { list-style: none; padding: 0; }
-        .profile-list li { margin-bottom: 0.5em; }
-        .profile-date { color: #7b8ca8; font-size: 0.95em; margin-left: 0.5em; }
-    </style>
+    <script>
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 20;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 5) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+        });
+    </script>
 </body>
 </html>

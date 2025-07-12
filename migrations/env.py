@@ -5,6 +5,9 @@ from flask import current_app
 
 from alembic import context
 
+# Import models to ensure they are registered with SQLAlchemy
+from app.models import User, Question, Answer, Vote, Comment, Report, Tag, Notification, Role
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config

@@ -2,159 +2,272 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ask a Question – StackIt</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     {{ ckeditor.load() }}
-    <script src="/static/ckeditor_hide_upgrade_warning.js"></script>
-</head>
-<body>
-    <nav class="navbar">
-        <a href="/" class="nav-brand"><i class="fa-solid fa-layer-group"></i> StackIt</a>
-        <a href="/ask" class="nav-btn"><i class="fa-solid fa-circle-question"></i> Ask</a>
-        <div class="notification-dropdown" style="position:relative;display:inline-block;">
-            <a href="/notifications" id="notif-bell" style="color: #4f8cff; text-decoration: none; position:relative; font-size:1.3em;">
-                <i class="fa-solid fa-bell"></i>
-                {% set unread = current_user.notifications|selectattr('is_read', 'equalto', False)|list|length %}
-                {% if unread > 0 %}
-                <span style="background:#e74c3c;color:#fff;border-radius:50%;padding:2px 7px;font-size:0.8em;position:absolute;top:-7px;right:-12px;">{{ unread }}</span>
-                {% endif %}
-            </a>
-    <div id="notif-dropdown" style="display:none;position:absolute;right:0;top:2.5em;min-width:320px;background:#fff;border-radius:8px;box-shadow:0 2px 16px rgba(0,0,0,0.15);z-index:1000;">
-        <div style="padding:1em 1em 0.5em 1em;font-weight:bold;border-bottom:1px solid #eee;">Recent Notifications</div>
-        <div style="max-height:250px;overflow-y:auto;">
-        {% set notifs = current_user.notifications|sort(attribute='created_at', reverse=True)|list %}
-        {% for notif in notifs[:8] %}
-            <div style="padding:0.7em 1em;border-bottom:1px solid #f1f1f1;{% if not notif.is_read %}background:#eaf6ff;{% endif %}">
-                <a href="{{ notif.url or '#' }}" style="color:#222;text-decoration:none;">{{ notif.message }}</a>
-                <div style="font-size:0.85em;color:#888;">{{ notif.created_at.strftime('%b %d, %Y %H:%M') }}</div>
-            </div>
-        {% else %}
-            <div style="padding:1em;color:#888;">No notifications yet.</div>
-        {% endfor %}
-        </div>
-        <div style="text-align:center;padding:0.5em 0;"><a href="/notifications" style="color:#2980b9;text-decoration:none;">View all</a></div>
-    </div>
-</div>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    var bell = document.getElementById('notif-bell');
-    var dropdown = document.getElementById('notif-dropdown');
-    if(bell && dropdown) {
-        bell.addEventListener('click', function(e) {
-            e.preventDefault();
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-        });
-        document.addEventListener('click', function(e) {
-            if (!bell.contains(e.target) && !dropdown.contains(e.target)) {
-                dropdown.style.display = 'none';
-            }
-        });
-    }
-});
-</script>
-        <span style="flex:1"></span>
-        {% if current_user.is_authenticated %}
-            <span style="color: #fff;">Hi, {{ current_user.username }}</span>
-            <a href="/logout" style="color: #fff; text-decoration: none;">Logout</a>
-        {% else %}
-            <a href="/login" style="color: #fff; text-decoration: none;">Login</a>
-            <a href="/register" style="color: #fff; text-decoration: none;">Register</a>
-        {% endif %}
-    </nav>
-    <div class="ask-container">
-        <h1 class="ask-title">Ask a Question</h1>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            {% for category, message in messages %}
-              <div class="flash flash-{{ category }}">{{ message }}</div>
-            {% endfor %}
-          {% endif %}
-        {% endwith %}
-        <form class="ask-form" method="post">
-            <label for="title">Title</label>
-            <input type="text" id="title" name="title" placeholder="Enter your question title" required>
-
-            <label for="description">Description</label>
-            <div class="ckeditor-wrap">
-                {{ ckeditor.create('description') }}
-            </div>
-
-            <label for="tags">Tags (comma-separated)</label>
-            <input type="text" id="tags" name="tags" placeholder="e.g. python, flask, database" required>
-
-            <button type="submit" class="ask-btn">Submit Question</button>
-        </form>
-    </div>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+        .bg-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .floating-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 6s ease-in-out infinite;
+        }
+        .circle-1 { width: 80px; height: 80px; top: 20%; left: 10%; animation-delay: 0s; }
+        .circle-2 { width: 120px; height: 120px; top: 60%; right: 15%; animation-delay: 2s; }
+        .circle-3 { width: 60px; height: 60px; bottom: 20%; left: 20%; animation-delay: 4s; }
+        .circle-4 { width: 100px; height: 100px; top: 40%; right: 25%; animation-delay: 1s; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: particleFloat 8s linear infinite;
+        }
+        @keyframes particleFloat {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+        .nav-container {
+            position: relative;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            margin: 2em;
+            padding: 1.5em 2em;
+            display: flex;
+            align-items: center;
+            gap: 1.5em;
+        }
+        .nav-brand {
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.4em;
+            letter-spacing: 2px;
+            text-decoration: none;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1.5em;
+        }
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 0.5em 1em;
+            border-radius: 8px;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after { width: 100%; }
+        .nav-link:hover {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .nav-spacer { flex: 1; }
+        .user-info { color: rgba(255, 255, 255, 0.9); font-weight: 500; }
+        .notification-dropdown { position: relative; display: inline-block; }
+        .notif-bell { color: rgba(255, 255, 255, 0.8); text-decoration: none; position: relative; font-size: 1.3em; transition: all 0.3s ease; }
+        .notif-bell:hover { color: #fff; transform: scale(1.1); }
+        .notif-count { background: linear-gradient(135deg, #ff6b6b, #ff8e8e); color: #fff; border-radius: 50%; padding: 2px 7px; font-size: 0.8em; position: absolute; top: -7px; right: -12px; font-weight: 600; box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4); }
+        .notif-dropdown { display: none; position: absolute; right: 0; top: 2.5em; min-width: 320px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37); z-index: 1000; }
+        .notif-header { padding: 1em 1em 0.5em 1em; font-weight: 600; color: #fff; border-bottom: 1px solid rgba(255, 255, 255, 0.2); }
+        .notif-list { max-height: 250px; overflow-y: auto; }
+        .notif-item { padding: 0.7em 1em; border-bottom: 1px solid rgba(255, 255, 255, 0.1); transition: background 0.3s ease; }
+        .notif-item:hover { background: rgba(255, 255, 255, 0.1); }
+        .notif-item.unread { background: rgba(255, 255, 255, 0.15); }
+        .notif-item a { color: #fff; text-decoration: none; font-weight: 500; }
+        .notif-time { font-size: 0.85em; color: rgba(255, 255, 255, 0.7); margin-top: 0.2em; }
+        .notif-footer { text-align: center; padding: 0.5em 0; }
+        .notif-footer a { color: rgba(255, 255, 255, 0.8); text-decoration: none; font-weight: 500; }
         .ask-container {
+            position: relative;
+            z-index: 10;
             max-width: 650px;
-            margin: 3em auto 2em auto;
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 8px 40px rgba(44,62,80,0.10);
-            padding: 2.5em 2.3em 2em 2.3em;
+            margin: 2em auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            padding: 3em 2.5em;
+            transform: translateY(20px);
+            animation: slideUp 0.8s ease-out forwards;
+        }
+        @keyframes slideUp {
+            to { transform: translateY(0); opacity: 1; }
         }
         .ask-title {
             text-align: center;
-            color: #2d3e50;
-            margin-bottom: 1.2em;
+            color: #fff;
             font-size: 2.1em;
+            margin-bottom: 1.2em;
             letter-spacing: 0.5px;
+            font-weight: 600;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        .ask-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            border-radius: 2px;
         }
         .ask-form label {
-            font-weight: 600;
-            color: #34495e;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
             margin-bottom: 0.25em;
             display: block;
+            font-size: 1em;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
         }
-        .ask-form input[type="text"],
-        .ask-form textarea {
+        .ask-form input[type="text"] {
             width: 100%;
-            padding: 1em 1.1em;
+            padding: 1em 1.2em;
             margin-bottom: 1.5em;
-            border: 1.5px solid #d1d5db;
-            border-radius: 14px;
-            font-size: 1.08em;
-            background: #f4f8fb;
-            box-shadow: 0 2px 16px rgba(44,62,80,0.07);
-            transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
-            outline: none;
-            color: #223040;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            font-size: 1em;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
-        .ask-form input[type="text"]:focus,
-        .ask-form textarea:focus {
-            border-color: #4f8cff;
-            background: #e9f0fc;
-            box-shadow: 0 4px 24px rgba(79,140,255,0.11);
+        .ask-form input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .ask-form input[type="text"]:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
         }
         .ckeditor-wrap {
             margin-bottom: 1.5em;
         }
+        .ask-form select {
+            width: 100%;
+            padding: 1em 1.2em;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            font-size: 1em;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            margin-bottom: 1.5em;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        .ask-form select:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
         .ask-btn {
             width: 100%;
-            padding: 1em;
-            background: linear-gradient(90deg, #4f8cff 0%, #2d3e50 100%);
+            padding: 1.1em;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
             color: #fff;
             border: none;
-            border-radius: 7px;
-            font-size: 1.15em;
+            border-radius: 12px;
+            font-size: 1.1em;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
-            margin-top: 0.5em;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin-top: 1em;
         }
+        .ask-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+        .ask-btn:hover::before { left: 100%; }
         .ask-btn:hover {
-            background: linear-gradient(90deg, #2d3e50 0%, #4f8cff 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.4);
         }
         .flash {
-            margin-bottom: 1em;
-            padding: 0.7em 1em;
-            border-radius: 5px;
-            font-size: 1em;
+            margin-bottom: 1.5em;
+            padding: 1em 1.2em;
+            border-radius: 12px;
+            font-size: 0.95em;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideIn 0.5s ease-out;
         }
-        .flash-success { background: #e9fbe5; color: #2d7a32; border: 1px solid #b2e2b2; }
-        .flash-danger { background: #fbe5e5; color: #a32d2d; border: 1px solid #e2b2b2; }
-        .flash-info { background: #e5f0fb; color: #2d5aa3; border: 1px solid #b2cbe2; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .flash-success { background: rgba(76, 175, 80, 0.2); color: #4caf50; border-color: rgba(76, 175, 80, 0.3); }
+        .flash-danger { background: rgba(244, 67, 54, 0.2); color: #f44336; border-color: rgba(244, 67, 54, 0.3); }
+        .flash-info { background: rgba(33, 150, 243, 0.2); color: #2196f3; border-color: rgba(33, 150, 243, 0.3); }
         /* CKEditor Custom Styling */
         .cke{
             border-radius: 10px !important;
@@ -195,29 +308,266 @@ document.addEventListener('DOMContentLoaded', function() {
         .cke_button:hover, .cke_combo:hover {
             background: #e0e7ff !important;
         }
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav-container {
+                margin: 0.5em;
+                padding: 0.7em 0.5em;
+                flex-wrap: wrap;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5em;
+            }
+            .nav-links {
+                order: 3;
+                width: 100%;
+                justify-content: center;
+                margin-top: 0.5em;
+                gap: 0.7em;
+            }
+            .nav-brand {
+                font-size: 1.1em;
+                margin-bottom: 0.5em;
+            }
+            .ask-container {
+                margin: 0.5em;
+                padding: 1em 0.5em;
+                border-radius: 12px;
+            }
+            .form-row {
+                flex-direction: column;
+                gap: 1em;
+            }
+            .form-group {
+                width: 100%;
+            }
+            .ask-title {
+                font-size: 1.3em;
+            }
+            .ask-title::after {
+                width: 40px;
+                height: 2px;
+            }
+            .ask-form label {
+                font-size: 0.95em;
+            }
+            .ask-form input[type="text"], .ask-form select {
+                padding: 0.8em 0.7em;
+                border-radius: 8px;
+                font-size: 0.95em;
+            }
+            .ask-btn {
+                padding: 0.9em;
+                font-size: 1em;
+                border-radius: 8px;
+            }
+        }
+        @media (max-width: 480px) {
+            .nav-container {
+                margin: 0;
+                padding: 0.5em 0.2em;
+                border-radius: 0;
+            }
+            .ask-container {
+                margin: 0;
+                padding: 0.5em 0.1em;
+                border-radius: 0;
+            }
+            .ask-title {
+                font-size: 1.1em;
+            }
+            .ask-title::after {
+                width: 24px;
+                height: 2px;
+            }
+            .ask-form input[type="text"], .ask-form select {
+                padding: 0.6em 0.3em;
+                border-radius: 6px;
+                font-size: 0.9em;
+            }
+            .ask-btn {
+                padding: 0.7em;
+                font-size: 0.95em;
+                border-radius: 6px;
+            }
+        }
+        .form-row {
+            display: flex;
+            gap: 1.5em;
+            margin-bottom: 1.5em;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5em;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 1em 1.2em;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            font-size: 1em;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input[type="text"]:focus {
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .form-group input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .ask-form input[type="text"]:focus, .ask-form select:focus {
+        }
     </style>
-    <link rel="stylesheet" href="/static/choices.min.css">
-    <script src="/static/choices.min.js"></script>
+</head>
+<body>
+    <!-- Animated background elements -->
+    <div class="bg-elements">
+        <div class="floating-circle circle-1"></div>
+        <div class="floating-circle circle-2"></div>
+        <div class="floating-circle circle-3"></div>
+        <div class="floating-circle circle-4"></div>
+    </div>
+    <!-- Particle effects -->
+    <div class="particles" id="particles"></div>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <a href="/" class="nav-brand">StackIt</a>
+        <div class="nav-links">
+            <a href="/ask" class="nav-link">Ask Question</a>
+            <div class="notification-dropdown">
+                <a href="/notifications" id="notif-bell" class="notif-bell">
+                    <span>&#128276;</span>
+                    {% set unread = current_user.notifications|selectattr('is_read', 'equalto', False)|list|length %}
+                    {% if unread > 0 %}
+                    <span class="notif-count">{{ unread }}</span>
+                    {% endif %}
+                </a>
+                <div id="notif-dropdown" class="notif-dropdown">
+                    <div class="notif-header">Recent Notifications</div>
+                    <div class="notif-list">
+                    {% set notifs = current_user.notifications|sort(attribute='created_at', reverse=True)|list %}
+                    {% for notif in notifs[:8] %}
+                        <div class="notif-item {% if not notif.is_read %}unread{% endif %}">
+                            <a href="{{ notif.url or '#' }}">{{ notif.message }}</a>
+                            <div class="notif-time">{{ notif.created_at.strftime('%b %d, %Y %H:%M') }}</div>
+                        </div>
+                    {% else %}
+                        <div class="notif-item">
+                            <span>No notifications yet.</span>
+                        </div>
+                    {% endfor %}
+                    </div>
+                    <div class="notif-footer">
+                        <a href="/notifications">View all</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-spacer"></div>
+        {% if current_user.is_authenticated %}
+            <span class="user-info">Hi, {{ current_user.username }}</span>
+            <a href="/logout" class="nav-link">Logout</a>
+        {% else %}
+            <a href="/login" class="nav-link">Login</a>
+            <a href="/register" class="nav-link">Register</a>
+        {% endif %}
+    </nav>
+    <div class="ask-container">
+        <h1 class="ask-title">Ask a Question</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        <form method="post" class="ask-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" name="title" required placeholder="Enter a short, descriptive title">
+                </div>
+                <div class="form-group">
+                    <label for="tags">Tags</label>
+                    <input type="text" id="tags" name="tags" required placeholder="Enter tags, separated by commas">
+                </div>
+            </div>
+            <label for="description">Description</label>
+            <div class="ckeditor-wrap">{{ ckeditor.create(name='description', value='') }}</div>
+            <button type="submit" class="ask-btn">Submit Question</button>
+        </form>
+        {{ ckeditor.config(name='description', config={
+    'toolbar': [
+        ['Bold', 'Italic', 'Strike', 'EmojiPanel', 'NumberedList', 'BulletedList', 'Link', 'ImageUpload', 'Blockquote', 'Undo', 'Redo', 'RemoveFormat', 'JustifyLeft', 'JustifyCenter', 'JustifyRight'],
+        ['FontSize', 'FontColor', 'FontBackgroundColor'],
+    ],
+    'extraPlugins': 'emoji',
+    'imageUploadUrl': url_for('main.upload'),
+    'removePlugins': 'easyimage',
+    'toolbarCanCollapse': True
+}) }}
+    </div>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var tagSelect = document.getElementById('tags');
-            if(tagSelect) {
-                new Choices(tagSelect, {
-                    removeItemButton: true,
-                    placeholder: true,
-                    placeholderValue: 'Select tags',
-                    searchEnabled: true,
-                    shouldSort: false,
-                    maxItemCount: 5
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 20;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 5) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+        // Notification dropdown functionality
+        function initNotifications() {
+            const bell = document.getElementById('notif-bell');
+            const dropdown = document.getElementById('notif-dropdown');
+            if (bell && dropdown) {
+                bell.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+                });
+                document.addEventListener('click', function(e) {
+                    if (!bell.contains(e.target) && !dropdown.contains(e.target)) {
+                        dropdown.style.display = 'none';
+                    }
                 });
             }
-        });
-    </script>
-    <script>
+        }
+        // Add hover effects to form inputs
+        function initFormEffects() {
+            document.querySelectorAll('.ask-form input').forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.style.transform = 'scale(1.02)';
+                });
+                input.addEventListener('blur', function() {
+                    this.parentElement.style.transform = 'scale(1)';
+                });
+            });
+        }
         document.addEventListener('DOMContentLoaded', function() {
-            if (window.CKEDITOR) {
-                CKEDITOR.replace('description');
-            }
+            createParticles();
+            initNotifications();
+            initFormEffects();
         });
     </script>
 </body>

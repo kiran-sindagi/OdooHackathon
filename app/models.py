@@ -43,9 +43,12 @@ class Question(db.Model):
         'Answer',
         backref='question',
         lazy=True,
-        foreign_keys='Answer.question_id'
+        foreign_keys='Answer.question_id',
+        cascade='all, delete-orphan'
     )
+    comments = db.relationship('Comment', backref='question', lazy=True, foreign_keys='Comment.question_id', cascade='all, delete-orphan')
     accepted_answer_id = db.Column(db.Integer, db.ForeignKey('answer.id'))
+    image_url = db.Column(db.String(255), default='')
 
 class Answer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -54,13 +57,15 @@ class Answer(db.Model):
     is_approved = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     question_id = db.Column(db.Integer, db.ForeignKey('question.id'), nullable=False)
-    votes = db.relationship('Vote', backref='answer', lazy=True)
+    votes = db.relationship('Vote', backref='answer', lazy=True, cascade='all, delete-orphan')
+    comments = db.relationship('Comment', backref='answer', lazy=True, foreign_keys='Comment.answer_id', cascade='all, delete-orphan')
 
 class Vote(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     answer_id = db.Column(db.Integer, db.ForeignKey('answer.id'), nullable=False)
     value = db.Column(db.Integer, nullable=False)  # 1 for upvote, -1 for downvote
+    user = db.relationship('User', backref='votes')
 
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)

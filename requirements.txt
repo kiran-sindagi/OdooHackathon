@@ -6,3 +6,4 @@ WTForms>=3.0
 Flask-WTF>=1.1
 Flask-Bcrypt>=1.0
 Flask-CKEditor>=0.4
+reportlab>=4.0

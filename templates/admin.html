@@ -2,51 +2,188 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel – StackIt</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+        .bg-elements {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;
+        }
+        .floating-circle {
+            position: absolute; border-radius: 50%; background: rgba(255,255,255,0.1); animation: float 6s ease-in-out infinite;
+        }
+        .circle-1 { width: 80px; height: 80px; top: 20%; left: 10%; animation-delay: 0s; }
+        .circle-2 { width: 120px; height: 120px; top: 60%; right: 15%; animation-delay: 2s; }
+        .circle-3 { width: 60px; height: 60px; bottom: 20%; left: 20%; animation-delay: 4s; }
+        .circle-4 { width: 100px; height: 100px; top: 40%; right: 25%; animation-delay: 1s; }
+        @keyframes float { 0%,100%{transform:translateY(0) rotate(0deg);} 50%{transform:translateY(-20px) rotate(180deg);} }
+        .particles {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none;
+        }
+        .particle {
+            position: absolute; width: 4px; height: 4px; background: rgba(255,255,255,0.5); border-radius: 50%; animation: particleFloat 8s linear infinite;
+        }
+        @keyframes particleFloat {
+            0%{transform:translateY(100vh) rotate(0deg);opacity:0;} 10%{opacity:1;} 90%{opacity:1;} 100%{transform:translateY(-100px) rotate(360deg);opacity:0;}
+        }
+        .nav-container {
+            position: relative; z-index: 10; background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 32px rgba(31,38,135,0.37); margin: 2em; padding: 1.5em 2em; display: flex; align-items: center; gap: 1.5em;
+        }
+        .nav-brand {
+            color: #fff; font-weight: 700; font-size: 1.4em; letter-spacing: 2px; text-decoration: none; text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .nav-links { display: flex; align-items: center; gap: 1.5em; }
+        .nav-link {
+            color: rgba(255,255,255,0.8); text-decoration: none; font-weight: 500; transition: all 0.3s ease; position: relative; padding: 0.5em 1em; border-radius: 8px;
+        }
+        .nav-link::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 2px; background: linear-gradient(90deg,#ff6b6b,#4ecdc4); transition: width 0.3s ease; }
+        .nav-link:hover::after { width: 100%; }
+        .nav-link:hover { color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5); background: rgba(255,255,255,0.1); }
+        .nav-spacer { flex: 1; }
+        .user-info { color: rgba(255,255,255,0.9); font-weight: 500; }
+        .admin-dashboard {
+            position: relative; z-index: 10; max-width: 1100px; margin: 2em auto; background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 32px rgba(31,38,135,0.37); padding: 2.5em 2em 2em 2em;
+        }
+        .dashboard-header h1 {
+            color: #fff; font-size: 2.2em; font-weight: 700; margin-bottom: 0.2em; text-shadow: 0 2px 10px rgba(0,0,0,0.3); letter-spacing: 1px;
+        }
+        .dashboard-subtitle {
+            color: rgba(255,255,255,0.9); font-size: 1.1em; margin-bottom: 2em; letter-spacing: 0.2px;
+        }
+        .dashboard-stats {
+            display: flex; gap: 2em; margin-bottom: 2em; flex-wrap: wrap;
+        }
+        .dashboard-stat {
+            flex: 1 1 180px; background: rgba(255,255,255,0.15); border-radius: 16px; padding: 1.2em 1em; text-align: center; box-shadow: 0 2px 10px rgba(31,38,135,0.07); border: 1px solid rgba(255,255,255,0.2); margin-bottom: 1em;
+        }
+        .stat-label {
+            color: #fff; font-size: 1.1em; font-weight: 500; margin-bottom: 0.5em;
+        }
+        .stat-num {
+            color: #4ecdc4; font-size: 2.1em; font-weight: 700; text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .dashboard-bar-chart {
+            display: flex; gap: 1.2em; margin-bottom: 2.5em; align-items: flex-end; height: 120px;
+        }
+        .bar {
+            flex: 1; border-radius: 12px 12px 0 0; position: relative; display: flex; align-items: flex-end; justify-content: center; min-width: 60px; transition: height 0.5s; box-shadow: 0 2px 10px rgba(31,38,135,0.07);
+        }
+        .bar span {
+            position: absolute; bottom: -2em; left: 50%; transform: translateX(-50%); color: #fff; font-weight: 600; font-size: 1em; text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .matrix-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        .matrix-line { position: absolute; top: 0; width: 2px; height: 100%; background: linear-gradient(180deg,rgba(255,255,255,0.08) 0%,rgba(255,255,255,0.01) 100%); animation: matrix-fall 2.5s linear infinite; }
+        @keyframes matrix-fall { 0%{height:0;} 100%{height:100%;} }
+        .admin-section {
+            position: relative; z-index: 10; max-width: 1100px; margin: 2em auto; background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 32px rgba(31,38,135,0.37); padding: 2em 2em 1.5em 2em; margin-bottom: 2.5em;
+        }
+        .admin-section h2 { color: #4ecdc4; font-size: 1.3em; margin-bottom: 1em; letter-spacing: 0.5px; }
+        .admin-table { width:100%; border-collapse:collapse; margin-bottom:1em; background: rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; }
+        .admin-table th, .admin-table td { border:1px solid rgba(255,255,255,0.15); padding:0.7em 1em; text-align:left; color: #fff; font-size: 1em; }
+        .admin-table th { background: rgba(255,255,255,0.13); font-weight: 600; }
+        .admin-table tr:nth-child(even) { background: rgba(255,255,255,0.07); }
+        .pending { color:#e67e22; font-weight:600; }
+        .banned { color:#e74c3c; font-weight:600; }
+        button, .admin-section button, .admin-section form button {
+            background: linear-gradient(135deg,#ff6b6b,#4ecdc4); color: #fff; border: none; border-radius: 8px; padding: 0.5em 1.2em; font-weight: 600; cursor: pointer; margin-right: 0.5em; font-size: 1em; transition: all 0.3s ease;
+        }
+        button:hover, .admin-section button:hover, .admin-section form button:hover {
+            background: linear-gradient(135deg,#4ecdc4,#ff6b6b); }
+        textarea {
+            width: 100%; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: #fff; padding: 0.7em; margin-bottom: 0.5em; font-size: 1em; resize: vertical; transition: all 0.3s ease; backdrop-filter: blur(10px);
+        }
+        textarea:focus { outline: none; border-color: rgba(255,255,255,0.5); box-shadow: 0 0 20px rgba(255,255,255,0.2); }
+        /* Mobile Responsive */
+        @media (max-width: 900px) {
+            .admin-dashboard, .admin-section { padding: 1em 0.5em; }
+            .dashboard-header h1 { font-size: 1.3em; }
+            .dashboard-stats { flex-direction: column; gap: 1em; }
+            .dashboard-bar-chart { gap: 0.5em; }
+            .admin-table th, .admin-table td { font-size: 0.95em; padding: 0.5em 0.5em; }
+        }
+        @media (max-width: 600px) {
+            .nav-container { margin: 0.5em; padding: 0.7em 0.5em; flex-wrap: wrap; flex-direction: column; align-items: stretch; gap: 0.5em; }
+            .nav-links { order: 3; width: 100%; justify-content: center; margin-top: 0.5em; gap: 0.7em; }
+            .nav-brand { font-size: 1.1em; margin-bottom: 0.5em; }
+            .admin-dashboard, .admin-section { margin: 0.5em; padding: 0.7em 0.5em; border-radius: 12px; }
+            .dashboard-header h1 { font-size: 1.1em; }
+            .dashboard-subtitle { font-size: 0.95em; }
+            .dashboard-stat { padding: 0.7em 0.5em; border-radius: 10px; }
+            .dashboard-bar-chart { height: 70px; }
+            .bar span { font-size: 0.9em; }
+            .admin-section h2 { font-size: 1.05em; }
+            .admin-table th, .admin-table td { font-size: 0.85em; padding: 0.3em 0.3em; }
+            textarea { font-size: 0.95em; }
+        }
+        @media (max-width: 400px) {
+            .nav-container { margin: 0; padding: 0.5em 0.2em; border-radius: 0; }
+            .admin-dashboard, .admin-section { margin: 0; padding: 0.5em 0.1em; border-radius: 0; }
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar">
-        <a href="/">StackIt</a>
-        <a href="/ask">Ask Question</a>
-        <a href="/notifications">Notifications</a>
-        <span style="flex:1"></span>
+    <!-- Animated background elements -->
+    <div class="bg-elements">
+        <div class="floating-circle circle-1"></div>
+        <div class="floating-circle circle-2"></div>
+        <div class="floating-circle circle-3"></div>
+        <div class="floating-circle circle-4"></div>
+    </div>
+    <!-- Particle effects -->
+    <div class="particles" id="particles"></div>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <a href="/" class="nav-brand">StackIt</a>
+        <div class="nav-links">
+            <a href="/ask" class="nav-link">Ask Question</a>
+            <a href="/notifications" class="nav-link">Notifications</a>
+        </div>
+        <div class="nav-spacer"></div>
         {% if current_user.is_authenticated %}
-            <span style="color: #fff;">Hi, {{ current_user.username }}</span>
-            <a href="/logout">Logout</a>
+            <span class="user-info">Hi, {{ current_user.username }}</span>
+            <a href="/logout" class="nav-link">Logout</a>
         {% else %}
-            <a href="/login">Login</a>
-            <a href="/register">Register</a>
+            <a href="/login" class="nav-link">Login</a>
+            <a href="/register" class="nav-link">Register</a>
         {% endif %}
     </nav>
     <div class="admin-dashboard">
-    <div class="matrix-bg">
-        {% for i in range(0, 18) %}
-        <div class="matrix-line" style="left: {{ 5 + i*5 }}%; animation-delay: {{ (i*0.21)|round(2) }}s;"></div>
-        {% endfor %}
-    </div>
+        <div class="matrix-bg">
+            {% for i in range(0, 18) %}
+            <div class="matrix-line" style="left: {{ 5 + i*5 }}%; animation-delay: {{ (i*0.21)|round(2) }}s;"></div>
+            {% endfor %}
+        </div>
         <div class="dashboard-header">
-    <div>
-        <h1>Admin Dashboard</h1>
-        <p class="dashboard-subtitle">Monitor and manage your platform at a glance</p>
-    </div>
-</div>
+            <div>
+                <h1>Admin Dashboard</h1>
+                <p class="dashboard-subtitle">Monitor and manage your platform at a glance</p>
+            </div>
+        </div>
         <div class="dashboard-stats">
             <div class="dashboard-stat">
                 <div class="stat-label">Users</div>
-                <div class="stat-num" data-value="{{ stats.users }}">0</div>
+                <div class="stat-num" data-value="{{ stats.users }}">{{ stats.users }}</div>
             </div>
             <div class="dashboard-stat">
                 <div class="stat-label">Questions</div>
-                <div class="stat-num" data-value="{{ stats.questions }}">0</div>
+                <div class="stat-num" data-value="{{ stats.questions }}">{{ stats.questions }}</div>
             </div>
             <div class="dashboard-stat">
                 <div class="stat-label">Answers</div>
-                <div class="stat-num" data-value="{{ stats.answers }}">0</div>
+                <div class="stat-num" data-value="{{ stats.answers }}">{{ stats.answers }}</div>
             </div>
             <div class="dashboard-stat">
                 <div class="stat-label">Reports</div>
-                <div class="stat-num" data-value="{{ stats.reports }}">0</div>
+                <div class="stat-num" data-value="{{ stats.reports }}">{{ stats.reports }}</div>
             </div>
         </div>
         <div id="admin-bar-chart" class="dashboard-bar-chart">
@@ -57,8 +194,7 @@
         </div>
     </div>
     <script src="/static/admin-dashboard.js"></script>
-<script src="/static/confetti.js"></script>
-
+    <script src="/static/confetti.js"></script>
     <div class="admin-section">
         <h2>Users</h2>
         <table class="admin-table">
@@ -128,17 +264,28 @@
     </div>
     <div class="admin-section">
         <h2>Reports</h2>
-        <form action="/admin/download_report/users" method="get" style="display:inline;"><button type="submit">Download Users</button></form>
-        <form action="/admin/download_report/questions" method="get" style="display:inline;"><button type="submit">Download Questions</button></form>
-        <form action="/admin/download_report/answers" method="get" style="display:inline;"><button type="submit">Download Answers</button></form>
+        <form action="/admin/download_report/users" method="get" style="display:inline;"><button type="submit">📊 Users PDF Report</button></form>
+        <form action="/admin/download_report/questions" method="get" style="display:inline;"><button type="submit">📊 Questions PDF Report</button></form>
+        <form action="/admin/download_report/answers" method="get" style="display:inline;"><button type="submit">📊 Answers PDF Report</button></form>
+        <form action="/admin/download_report/comprehensive" method="get" style="display:inline;"><button type="submit">📊 Complete Activity Report</button></form>
     </div>
-    <style>
-        .admin-section { margin-bottom: 2.5em; }
-        .admin-table { width:100%; border-collapse:collapse; margin-bottom:1em; }
-        .admin-table th, .admin-table td { border:1px solid #e0e7ff; padding:0.6em 1em; text-align:left; }
-        .pending { color:#e67e22; font-weight:600; }
-        .banned { color:#e74c3c; font-weight:600; }
-        button { margin-right: 0.5em; }
-    </style>
+    <script>
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 25;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 5) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+        });
+    </script>
 </body>
 </html>
