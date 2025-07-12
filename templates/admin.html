@@ -1,144 +1,285 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Admin Panel – StackIt</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
     <nav class="navbar">
-        <a href="/">StackIt</a>
-        <a href="/ask">Ask Question</a>
-        <a href="/notifications">Notifications</a>
-        <span style="flex:1"></span>
-        {% if current_user.is_authenticated %}
-            <span style="color: #fff;">Hi, {{ current_user.username }}</span>
-            <a href="/logout">Logout</a>
-        {% else %}
-            <a href="/login">Login</a>
-            <a href="/register">Register</a>
-        {% endif %}
+      <a href="/">StackIt</a>
+      <a href="/ask">Ask Question</a>
+      <a href="/notifications">Notifications</a>
+      <span style="flex: 1"></span>
+      {% if current_user.is_authenticated %}
+      <span style="color: #fff">Hi, {{ current_user.username }}</span>
+      <a href="/logout">Logout</a>
+      {% else %}
+      <a href="/login">Login</a>
+      <a href="/register">Register</a>
+      {% endif %}
     </nav>
     <div class="admin-dashboard">
-    <div class="matrix-bg">
+      <div class="matrix-bg">
         {% for i in range(0, 18) %}
-        <div class="matrix-line" style="left: {{ 5 + i*5 }}%; animation-delay: {{ (i*0.21)|round(2) }}s;"></div>
+        <div
+          class="matrix-line"
+          style="left: {{ 5 + i*5 }}%; animation-delay: {{ (i*0.21)|round(2) }}s;"
+        ></div>
         {% endfor %}
-    </div>
-        <div class="dashboard-header">
-    <div>
-        <h1>Admin Dashboard</h1>
-        <p class="dashboard-subtitle">Monitor and manage your platform at a glance</p>
-    </div>
-</div>
-        <div class="dashboard-stats">
-            <div class="dashboard-stat">
-                <div class="stat-label">Users</div>
-                <div class="stat-num" data-value="{{ stats.users }}">0</div>
-            </div>
-            <div class="dashboard-stat">
-                <div class="stat-label">Questions</div>
-                <div class="stat-num" data-value="{{ stats.questions }}">0</div>
-            </div>
-            <div class="dashboard-stat">
-                <div class="stat-label">Answers</div>
-                <div class="stat-num" data-value="{{ stats.answers }}">0</div>
-            </div>
-            <div class="dashboard-stat">
-                <div class="stat-label">Reports</div>
-                <div class="stat-num" data-value="{{ stats.reports }}">0</div>
-            </div>
+      </div>
+      <div class="dashboard-header">
+        <div>
+          <h1>Admin Dashboard</h1>
+          <p class="dashboard-subtitle">
+            Monitor and manage your platform at a glance
+          </p>
         </div>
-        <div id="admin-bar-chart" class="dashboard-bar-chart">
-            <div class="bar" data-value="{{ stats.users_percent }}" style="background:#4f8cff;"><span>Users</span></div>
-            <div class="bar" data-value="{{ stats.questions_percent }}" style="background:#2d3e50;"><span>Questions</span></div>
-            <div class="bar" data-value="{{ stats.answers_percent }}" style="background:#e67e22;"><span>Answers</span></div>
-            <div class="bar" data-value="{{ stats.reports_percent }}" style="background:#e74c3c;"><span>Reports</span></div>
+      </div>
+      <div class="dashboard-stats">
+        <div class="dashboard-stat">
+          <div class="stat-label">Users</div>
+          <div class="stat-num" data-value="{{ stats.users }}">0</div>
         </div>
+        <div class="dashboard-stat">
+          <div class="stat-label">Questions</div>
+          <div class="stat-num" data-value="{{ stats.questions }}">0</div>
+        </div>
+        <div class="dashboard-stat">
+          <div class="stat-label">Answers</div>
+          <div class="stat-num" data-value="{{ stats.answers }}">0</div>
+        </div>
+        <div class="dashboard-stat">
+          <div class="stat-label">Reports</div>
+          <div class="stat-num" data-value="{{ stats.reports }}">0</div>
+        </div>
+      </div>
+      <div id="admin-bar-chart" class="dashboard-bar-chart">
+        <div
+          class="bar"
+          data-value="{{ stats.users_percent }}"
+          style="background: #4f8cff"
+        >
+          <span>Users</span>
+        </div>
+        <div
+          class="bar"
+          data-value="{{ stats.questions_percent }}"
+          style="background: #2d3e50"
+        >
+          <span>Questions</span>
+        </div>
+        <div
+          class="bar"
+          data-value="{{ stats.answers_percent }}"
+          style="background: #e67e22"
+        >
+          <span>Answers</span>
+        </div>
+        <div
+          class="bar"
+          data-value="{{ stats.reports_percent }}"
+          style="background: #e74c3c"
+        >
+          <span>Reports</span>
+        </div>
+      </div>
     </div>
     <script src="/static/admin-dashboard.js"></script>
-<script src="/static/confetti.js"></script>
+    <script src="/static/confetti.js"></script>
 
     <div class="admin-section">
-        <h2>Users</h2>
-        <table class="admin-table">
-            <tr><th>Username</th><th>Email</th><th>Status</th><th>Roles</th><th>Actions</th></tr>
-            {% for user in users %}
-            <tr>
-                <td>{{ user.username }}</td>
-                <td>{{ user.email }}</td>
-                <td>{% if user.is_banned %}<span class="banned">Banned</span>{% else %}Active{% endif %}</td>
-                <td>{{ user.roles|map(attribute='name')|join(', ') }}</td>
-                <td>
-                    {% if not user.is_banned %}
-                    <form action="/admin/ban_user/{{ user.id }}" method="post" style="display:inline;"><button type="submit">Ban</button></form>
-                    {% else %}
-                    <form action="/admin/unban_user/{{ user.id }}" method="post" style="display:inline;"><button type="submit">Unban</button></form>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
+      <h2>Users</h2>
+      <table class="admin-table">
+        <tr>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Status</th>
+          <th>Roles</th>
+          <th>Actions</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+          <td>{{ user.username }}</td>
+          <td>{{ user.email }}</td>
+          <td>
+            {% if user.is_banned %}<span class="banned">Banned</span>{% else
+            %}Active{% endif %}
+          </td>
+          <td>{{ user.roles|map(attribute='name')|join(', ') }}</td>
+          <td>
+            {% if not user.is_banned %}
+            <form
+              action="/admin/ban_user/{{ user.id }}"
+              method="post"
+              style="display: inline"
+            >
+              <button type="submit">Ban</button>
+            </form>
+            {% else %}
+            <form
+              action="/admin/unban_user/{{ user.id }}"
+              method="post"
+              style="display: inline"
+            >
+              <button type="submit">Unban</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
     </div>
     <div class="admin-section">
-        <h2>Questions</h2>
-        <table class="admin-table">
-            <tr><th>Title</th><th>Author</th><th>Status</th><th>Actions</th></tr>
-            {% for q in questions %}
-            <tr>
-                <td><a href="/question/{{ q.id }}">{{ q.title }}</a></td>
-                <td>{{ q.author.username }}</td>
-                <td>{% if q.is_approved %}Approved{% else %}<span class="pending">Pending</span>{% endif %}</td>
-                <td>
-                    {% if not q.is_approved %}
-                    <form action="/admin/approve_question/{{ q.id }}" method="post" style="display:inline;"><button type="submit">Approve</button></form>
-                    <form action="/admin/reject_question/{{ q.id }}" method="post" style="display:inline;"><button type="submit">Reject</button></form>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
+      <h2>Questions</h2>
+      <table class="admin-table">
+        <tr>
+          <th>Title</th>
+          <th>Author</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+        {% for q in questions %}
+        <tr>
+          <td><a href="/question/{{ q.id }}">{{ q.title }}</a></td>
+          <td>{{ q.author.username }}</td>
+          <td>
+            {% if q.is_approved %}Approved{% else %}<span class="pending"
+              >Pending</span
+            >{% endif %}
+          </td>
+          <td>
+            {% if not q.is_approved %}
+            <form
+              action="/admin/approve_question/{{ q.id }}"
+              method="post"
+              style="display: inline"
+            >
+              <button type="submit">Approve</button>
+            </form>
+            <form
+              action="/admin/reject_question/{{ q.id }}"
+              method="post"
+              style="display: inline"
+            >
+              <button type="submit">Reject</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
     </div>
     <div class="admin-section">
-        <h2>Answers</h2>
-        <table class="admin-table">
-            <tr><th>ID</th><th>Author</th><th>Question</th><th>Status</th><th>Actions</th></tr>
-            {% for a in answers %}
-            <tr>
-                <td>{{ a.id }}</td>
-                <td>{{ a.author.username }}</td>
-                <td><a href="/question/{{ a.question.id }}">{{ a.question.title }}</a></td>
-                <td>{% if a.is_approved %}Approved{% else %}<span class="pending">Pending</span>{% endif %}</td>
-                <td>
-                    {% if not a.is_approved %}
-                    <form action="/admin/approve_answer/{{ a.id }}" method="post" style="display:inline;"><button type="submit">Approve</button></form>
-                    <form action="/admin/reject_answer/{{ a.id }}" method="post" style="display:inline;"><button type="submit">Reject</button></form>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
+      <h2>Answers</h2>
+      <table class="admin-table">
+        <tr>
+          <th>ID</th>
+          <th>Author</th>
+          <th>Question</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+        {% for a in answers %}
+        <tr>
+          <td>{{ a.id }}</td>
+          <td>{{ a.author.username }}</td>
+          <td>
+            <a href="/question/{{ a.question.id }}">{{ a.question.title }}</a>
+          </td>
+          <td>
+            {% if a.is_approved %}Approved{% else %}<span class="pending"
+              >Pending</span
+            >{% endif %}
+          </td>
+          <td>
+            {% if not a.is_approved %}
+            <form
+              action="/admin/approve_answer/{{ a.id }}"
+              method="post"
+              style="display: inline"
+            >
+              <button type="submit">Approve</button>
+            </form>
+            <form
+              action="/admin/reject_answer/{{ a.id }}"
+              method="post"
+              style="display: inline"
+            >
+              <button type="submit">Reject</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
     </div>
     <div class="admin-section">
-        <h2>Platform Message</h2>
-        <form action="/admin/send_message" method="post">
-            <textarea name="message" rows="3" style="width:100%;"></textarea>
-            <button type="submit">Send to All Users</button>
-        </form>
+      <h2>Platform Message</h2>
+      <form action="/admin/send_message" method="post">
+        <textarea name="message" rows="3" style="width: 100%"></textarea>
+        <button type="submit">Send to All Users</button>
+      </form>
     </div>
     <div class="admin-section">
-        <h2>Reports</h2>
-        <form action="/admin/download_report/users" method="get" style="display:inline;"><button type="submit">Download Users</button></form>
-        <form action="/admin/download_report/questions" method="get" style="display:inline;"><button type="submit">Download Questions</button></form>
-        <form action="/admin/download_report/answers" method="get" style="display:inline;"><button type="submit">Download Answers</button></form>
+      <h2>Reports</h2>
+      <form
+        action="/admin/download_report/users"
+        method="get"
+        style="display: inline"
+      >
+        <button type="submit">Download Users</button>
+      </form>
+      <form
+        action="/admin/download_report/questions"
+        method="get"
+        style="display: inline"
+      >
+        <button type="submit">Download Questions</button>
+      </form>
+      <form
+        action="/admin/download_report/answers"
+        method="get"
+        style="display: inline"
+      >
+        <button type="submit">Download Answers</button>
+      </form>
+    </div>
+    <div class="admin-section">
+      <h2>Create Admin User</h2>
+      <form method="post">
+        <input name="username" placeholder="Username" />
+        <input name="email" placeholder="Email" />
+        <input name="password" type="password" placeholder="Password" />
+        <button type="submit">Create Admin</button>
+      </form>
     </div>
     <style>
-        .admin-section { margin-bottom: 2.5em; }
-        .admin-table { width:100%; border-collapse:collapse; margin-bottom:1em; }
-        .admin-table th, .admin-table td { border:1px solid #e0e7ff; padding:0.6em 1em; text-align:left; }
-        .pending { color:#e67e22; font-weight:600; }
-        .banned { color:#e74c3c; font-weight:600; }
-        button { margin-right: 0.5em; }
+      .admin-section {
+        margin-bottom: 2.5em;
+      }
+      .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1em;
+      }
+      .admin-table th,
+      .admin-table td {
+        border: 1px solid #e0e7ff;
+        padding: 0.6em 1em;
+        text-align: left;
+      }
+      .pending {
+        color: #e67e22;
+        font-weight: 600;
+      }
+      .banned {
+        color: #e74c3c;
+        font-weight: 600;
+      }
+      button {
+        margin-right: 0.5em;
+      }
     </style>
-</body>
+  </body>
 </html>

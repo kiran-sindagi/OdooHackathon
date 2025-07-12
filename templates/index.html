@@ -1,184 +1,489 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>StackIt – Home</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body style="background: linear-gradient(120deg, #e0e7ff 0%, #f9fafc 100%); min-height: 100vh;">
-    <nav style="display: flex; align-items: center; gap: 1em; background: #2d3e50; padding: 1em 2em; border-radius: 8px; margin-bottom: 2em;">
-        <a href="/" style="color: #fff; font-weight: bold; font-size: 1.2em; letter-spacing: 1px; text-decoration: none;">StackIt</a>
-        <a href="/ask" style="color: #fff; text-decoration: none;">Ask Question</a>
+    <link rel="stylesheet" href="/static/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --secondary: #0f172a;
+        --accent: #22d3ee;
+        --background: #0f172a;
+        --surface: rgba(30, 41, 59, 0.98);
+        --surface-light: rgba(51, 65, 85, 0.5);
+        --text: #f8fafc;
+        --text-secondary: #cbd5e1;
+        --border: rgba(148, 163, 184, 0.1);
+        --shadow: rgba(0, 0, 0, 0.25);
+      }
+
+      body {
+        background: radial-gradient(
+          circle at top right,
+          var(--secondary) 0%,
+          var(--background) 100%
+        );
+        min-height: 100vh;
+        font-family: "Inter", sans-serif;
+        color: var(--text);
+        line-height: 1.6;
+      }
+
+      /* Updated Navigation Styles */
+      nav {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: var(--surface);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 2rem;
+        border-bottom: 1px solid var(--border);
+        margin: 0;
+        border-radius: 0;
+      }
+
+      .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+      }
+
+      .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+      }
+
+      .nav-brand {
+        font-size: 1.25rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.5px;
+      }
+
+      nav a {
+        color: var(--text);
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+        font-weight: 500;
+        font-size: 0.95rem;
+      }
+
+      nav a:hover {
+        background: var(--surface-light);
+        transform: translateY(-1px);
+      }
+
+      .home-container {
+        max-width: 1000px;
+        margin: 3rem auto;
+        padding: 0 1.5rem;
+        animation: fadeIn 0.6s ease-out;
+      }
+
+      .home-title {
+        text-align: center;
+        color: var(--text);
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .home-subtitle {
+        text-align: center;
+        color: var(--text-secondary);
+        font-size: 1.15rem;
+        margin-bottom: 3rem;
+      }
+
+      .questions-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .question-card {
+        background: var(--surface);
+        border-radius: 1rem;
+        box-shadow: 0 8px 16px -4px var(--shadow);
+        padding: 1.5rem;
+        border: 1px solid var(--border);
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+      }
+
+      .question-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 20px -4px var(--shadow);
+        border-color: var(--primary);
+      }
+
+      .question-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text);
+        text-decoration: none;
+        margin-bottom: 0.75rem;
+        display: block;
+      }
+
+      .question-title:hover {
+        color: var(--accent);
+      }
+
+      .question-meta {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+      }
+
+      .tag-badge {
+        display: inline-block;
+        background: var(--surface-light);
+        color: var(--text);
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin: 0.25rem;
+        border: 1px solid var(--border);
+        transition: all 0.2s ease;
+      }
+
+      .tag-badge:hover {
+        background: var(--primary);
+        color: var(--text);
+        border-color: var(--primary-dark);
+      }
+
+      .no-questions {
+        text-align: center;
+        color: var(--text-secondary);
+        padding: 3rem;
+        background: var(--surface);
+        border-radius: 1rem;
+        border: 1px solid var(--border);
+      }
+
+      .no-questions a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .no-questions a:hover {
+        text-decoration: underline;
+      }
+
+      /* Notification styles */
+      .notification-bell {
+        position: relative;
+        padding: 0.5rem;
+        border-radius: 0.75rem;
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
+
+      .notification-bell:hover {
+        background: var(--surface-light);
+      }
+
+      .notification-count {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: linear-gradient(
+          135deg,
+          var(--primary) 0%,
+          var(--primary-dark) 100%
+        );
+        color: var(--text);
+        border-radius: 9999px;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+
+      .notification-dropdown {
+        position: absolute;
+        top: 3.5rem;
+        right: 0;
+        width: 380px;
+        background: var(--surface);
+        border-radius: 1rem;
+        border: 1px solid var(--border);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        transform-origin: top right;
+        transition: all 0.2s ease;
+        z-index: 1000;
+      }
+
+      .notification-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        font-weight: 600;
+        color: var(--text);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .notification-list {
+        max-height: 360px;
+        overflow-y: auto;
+      }
+
+      .notification-item {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        transition: all 0.2s ease;
+      }
+
+      .notification-item:hover {
+        background: var(--surface-light);
+      }
+
+      .notification-item.unread {
+        background: rgba(99, 102, 241, 0.1);
+      }
+
+      .notification-content {
+        color: var(--text);
+        text-decoration: none;
+        font-size: 0.95rem;
+        display: block;
+      }
+
+      .notification-time {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+      }
+
+      .notification-footer {
+        padding: 1rem;
+        text-align: center;
+        border-top: 1px solid var(--border);
+      }
+
+      .notification-footer a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+      }
+
+      .notification-footer a:hover {
+        color: var(--accent);
+      }
+
+      /* Scrollbar Styling */
+      .notification-list::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .notification-list::-webkit-scrollbar-track {
+        background: var(--surface-light);
+        border-radius: 3px;
+      }
+
+      .notification-list::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 3px;
+      }
+
+      /* Animation Keyframes */
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .notification-dropdown[style*="block"] {
+        animation: slideIn 0.2s ease-out;
+      }
+
+      /* User Welcome Section */
+      .user-welcome {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.25rem 0.75rem;
+        background: var(--surface-light);
+        border-radius: 2rem;
+        border: 1px solid var(--border);
+      }
+
+      .user-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 0.875rem;
+        border-radius: 50%;
+        background: linear-gradient(
+          135deg,
+          var(--primary) 0%,
+          var(--accent) 100%
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      @media (max-width: 768px) {
+        nav {
+          padding: 0.75rem 1rem;
+        }
+
+        .nav-left,
+        .nav-right {
+          gap: 1rem;
+        }
+
+        .user-welcome span {
+          display: none; /* Hide username text on mobile */
+        }
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="nav-left">
+        <a href="/" class="nav-brand">StackIt</a>
+        <a href="/ask">Ask Question</a>
+      </div>
+      <div class="nav-right">
         {% if current_user.is_authenticated %}
-        <div class="notification-dropdown" style="position:relative;display:inline-block;">
-    <a href="/notifications" id="notif-bell" style="color: #fff; text-decoration: none; position:relative;">
-        <span style="font-size:1.3em; vertical-align:middle;">&#128276;</span>
-        {% set unread = current_user.notifications|selectattr('is_read', 'equalto', False)|list|length %}
-        {% if unread > 0 %}
-        <span style="background:#e74c3c;color:#fff;border-radius:50%;padding:2px 7px;font-size:0.8em;position:absolute;top:-7px;right:-12px;">{{ unread }}</span>
-        {% endif %}
-    </a>
-    <div id="notif-dropdown" style="display:none;position:absolute;right:0;top:2.5em;min-width:320px;background:#fff;border-radius:8px;box-shadow:0 2px 16px rgba(0,0,0,0.15);z-index:1000;">
-        <div style="padding:1em 1em 0.5em 1em;font-weight:bold;border-bottom:1px solid #eee;">Recent Notifications</div>
-        <div style="max-height:250px;overflow-y:auto;">
-        {% set notifs = current_user.notifications|sort(attribute='created_at', reverse=True)|list %}
-        {% for notif in notifs[:8] %}
-            <div style="padding:0.7em 1em;border-bottom:1px solid #f1f1f1;{% if not notif.is_read %}background:#eaf6ff;{% endif %}">
-                <a href="{{ notif.url or '#' }}" style="color:#222;text-decoration:none;">{{ notif.message }}</a>
-                <div style="font-size:0.85em;color:#888;">{{ notif.created_at.strftime('%b %d, %Y %H:%M') }}</div>
+        <div class="notification-bell">
+          <a href="#" id="notif-bell">
+            <span class="bell-icon">🔔</span>
+            {% set unread = current_user.notifications|selectattr('is_read',
+            'equalto', False)|list|length %} {% if unread > 0 %}
+            <span class="notification-count">{{ unread }}</span>
+            {% endif %}
+          </a>
+          <div
+            id="notif-dropdown"
+            class="notification-dropdown"
+            style="display: none"
+          >
+            <div class="notification-header">
+              <span>Recent Notifications</span>
+              {% if unread > 0 %}
+              <span class="unread-count">{{ unread }} unread</span>
+              {% endif %}
             </div>
-        {% else %}
-            <div style="padding:1em;color:#888;">No notifications yet.</div>
-        {% endfor %}
+            <div class="notification-list">
+              {% set notifs =
+              current_user.notifications|sort(attribute='created_at',
+              reverse=True)|list %} {% for notif in notifs[:8] %}
+              <div
+                class="notification-item {% if not notif.is_read %}unread{% endif %}"
+              >
+                <a href="{{ notif.url }}" class="notification-content">
+                  {{ notif.message }}
+                </a>
+                <div class="notification-time">
+                  {{ notif.created_at.strftime('%b %d, %Y %H:%M') }}
+                </div>
+              </div>
+              {% else %}
+              <div class="notification-item">
+                <span class="notification-content">No notifications yet.</span>
+              </div>
+              {% endfor %}
+            </div>
+            <div class="notification-footer">
+              <a href="/notifications">View all notifications</a>
+            </div>
+          </div>
         </div>
-        <div style="text-align:center;padding:0.5em 0;"><a href="/notifications" style="color:#2980b9;text-decoration:none;">View all</a></div>
-    </div>
-</div>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    var bell = document.getElementById('notif-bell');
-    var dropdown = document.getElementById('notif-dropdown');
-    if(bell && dropdown) {
-        bell.addEventListener('click', function(e) {
-            e.preventDefault();
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-        });
-        document.addEventListener('click', function(e) {
-            if (!bell.contains(e.target) && !dropdown.contains(e.target)) {
-                dropdown.style.display = 'none';
-            }
-        });
-    }
-});
-</script>
-        {% endif %}
-        <span style="flex:1"></span>
-        {% if current_user.is_authenticated %}
-            <span style="color: #fff;">Hi, {{ current_user.username }}</span>
-            <a href="/logout" style="color: #fff; text-decoration: none;">Logout</a>
+        <div class="user-welcome">
+          <div class="user-avatar">{{ current_user.username[0].upper() }}</div>
+          <span>{{ current_user.username }}</span>
+          <a href="/logout">Logout</a>
+        </div>
         {% else %}
-            <a href="/login" style="color: #fff; text-decoration: none;">Login</a>
-            <a href="/register" style="color: #fff; text-decoration: none;">Register</a>
+        <a href="/login">Login</a>
+        <a href="/register">Register</a>
         {% endif %}
+      </div>
     </nav>
     <div class="home-container">
-        <h1 class="home-title">StackIt Q&A</h1>
-        <p class="home-subtitle">A minimal, modern platform for collaborative learning and knowledge sharing.</p>
-        <div class="questions-list">
-            {% for question in questions %}
-            <div class="question-card">
-                <div class="question-header">
-                    <a class="question-title" href="/question/{{ question.id }}">{{ question.title }}</a>
-                </div>
-                <div class="question-meta">
-                    <span class="question-author">by {{ question.author.username }}</span>
-                    <span class="question-date">{{ question.created_at.strftime('%b %d, %Y') }}</span>
-                </div>
-                {% if question.tags %}
-                <div class="question-tags">
-                    {% for tag in question.tags %}
-                    <span class="tag-badge">{{ tag.name }}</span>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-            {% else %}
-            <div class="no-questions">No questions yet. Be the first to <a href="/ask">ask one!</a></div>
+      <h1 class="home-title">StackIt Q&A</h1>
+      <p class="home-subtitle">
+        A minimal, modern platform for collaborative learning and knowledge
+        sharing.
+      </p>
+      <div class="questions-list">
+        {% for question in questions %}
+        <div class="question-card">
+          <div class="question-header">
+            <a class="question-title" href="/question/{{ question.id }}"
+              >{{ question.title }}</a
+            >
+          </div>
+          <div class="question-meta">
+            <span class="question-author"
+              >by {{ question.author.username }}</span
+            >
+            <span class="question-date"
+              >{{ question.created_at.strftime('%b %d, %Y') }}</span
+            >
+          </div>
+          {% if question.tags %}
+          <div class="question-tags">
+            {% for tag in question.tags %}
+            <span class="tag-badge">{{ tag.name }}</span>
             {% endfor %}
+          </div>
+          {% endif %}
         </div>
+        {% else %}
+        <div class="no-questions">
+          No questions yet. Be the first to <a href="/ask">ask one!</a>
+        </div>
+        {% endfor %}
+      </div>
     </div>
-    <style>
-        .home-container {
-            max-width: 850px;
-            margin: 3em auto 2em auto;
-            background: #fff;
-            border-radius: 18px;
-            box-shadow: 0 8px 40px rgba(44,62,80,0.12);
-            padding: 2.7em 2.5em 2em 2.5em;
-        }
-        .home-title {
-            text-align: center;
-            color: #2d3e50;
-            font-size: 2.5em;
-            margin-bottom: 0.3em;
-            letter-spacing: 1px;
-        }
-        .home-subtitle {
-            text-align: center;
-            color: #4f8cff;
-            font-size: 1.15em;
-            margin-bottom: 2.2em;
-            letter-spacing: 0.2px;
-        }
-        .questions-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1.2em;
-        }
-        .question-card {
-            background: linear-gradient(90deg, #f7faff 0%, #e9f0fc 100%);
-            border-radius: 12px;
-            box-shadow: 0 2px 16px rgba(44,62,80,0.07);
-            padding: 1.3em 1.2em 1em 1.2em;
-            transition: box-shadow 0.2s, transform 0.2s;
-            border: 1.5px solid #e0e7ff;
-        }
-        .question-card:hover {
-            box-shadow: 0 4px 32px rgba(44,62,80,0.12);
-            transform: translateY(-2px) scale(1.02);
-            border-color: #4f8cff;
-        }
-        .question-header {
-            margin-bottom: 0.3em;
-        }
-        .question-title {
-            font-size: 1.25em;
-            font-weight: 700;
-            color: #223040;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        .question-title:hover {
-            color: #4f8cff;
-        }
-        .question-meta {
-            font-size: 0.99em;
-            color: #7b8ca8;
-            margin-bottom: 0.6em;
-        }
-        .question-meta .question-author {
-            font-weight: 500;
-        }
-        .question-meta .question-date {
-            margin-left: 0.8em;
-            font-style: italic;
-        }
-        .question-tags {
-            margin-top: 0.2em;
-        }
-        .tag-badge {
-            display: inline-block;
-            background: #e0e7ff;
-            color: #2d3e50;
-            border-radius: 6px;
-            padding: 0.18em 0.75em;
-            font-size: 0.97em;
-            margin-right: 0.35em;
-            margin-bottom: 0.15em;
-            font-weight: 500;
-            letter-spacing: 0.1px;
-            border: 1px solid #d1d5db;
-        }
-        .no-questions {
-            text-align: center;
-            color: #7b8ca8;
-            font-size: 1.1em;
-            margin-top: 2em;
-        }
-        .no-questions a {
-            color: #4f8cff;
-            text-decoration: underline;
-        }
-    </style>
-</body>
+  </body>
 </html>

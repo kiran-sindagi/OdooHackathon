@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, send_from_directory, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
-from .models import User, Question, Answer, Tag, Notification
+from .models import User, Question, Answer, Tag, Notification, Vote, Comment
 from . import db, login_manager
 
 main = Blueprint('main', __name__)
@@ -221,7 +221,6 @@ def answer_question(question_id):
 @main.route('/vote/<int:answer_id>/<string:action>')
 @login_required
 def vote_answer(answer_id, action):
-    from .models import Vote, Answer
     answer = Answer.query.get_or_404(answer_id)
     existing_vote = Vote.query.filter_by(user_id=current_user.id, answer_id=answer_id).first()
     rep_delta = 0
